@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ action }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- (1) 基本資料 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-building"></i> (1) 基本資料</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.customer.id_for_label }}" class="form-label">
+                                        選擇客戶 <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.customer }}
+                                    <small class="form-text text-muted">選擇客戶後將自動帶入公司名稱和Email</small>
+                                    {% if form.customer.errors %}
+                                    <div class="text-danger small">{{ form.customer.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.company_name.id_for_label }}" class="form-label">
+                                            公司名稱 <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.company_name }}
+                                        {% if form.company_name.errors %}
+                                        <div class="text-danger small">{{ form.company_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                                            Email
+                                        </label>
+                                        {{ form.email }}
+                                        {% if form.email.errors %}
+                                        <div class="text-danger small">{{ form.email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (2) 查帳紀錄 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> (2) 查帳紀錄</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.year.id_for_label }}" class="form-label">
+                                            年度 <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.year }}
+                                        {% if form.year.errors %}
+                                        <div class="text-danger small">{{ form.year.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.tax_type.id_for_label }}" class="form-label">
+                                            稅種 <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.tax_type }}
+                                        {% if form.tax_type.errors %}
+                                        <div class="text-danger small">{{ form.tax_type.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.reason.id_for_label }}" class="form-label">
+                                            原因 <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.reason }}
+                                        {% if form.reason.errors %}
+                                        <div class="text-danger small">{{ form.reason.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.letter_date.id_for_label }}" class="form-label">
+                                            來函/送件日期
+                                        </label>
+                                        {{ form.letter_date }}
+                                        {% if form.letter_date.errors %}
+                                        <div class="text-danger small">{{ form.letter_date.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.expected_reply_date.id_for_label }}" class="form-label">
+                                            預計回覆日期
+                                        </label>
+                                        {{ form.expected_reply_date }}
+                                        {% if form.expected_reply_date.errors %}
+                                        <div class="text-danger small">{{ form.expected_reply_date.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.progress.id_for_label }}" class="form-label">
+                                        進度 <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.progress }}
+                                    {% if form.progress.errors %}
+                                    <div class="text-danger small">{{ form.progress.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.jurisdiction.id_for_label }}" class="form-label">
+                                            轄區
+                                        </label>
+                                        {{ form.jurisdiction }}
+                                        {% if form.jurisdiction.errors %}
+                                        <div class="text-danger small">{{ form.jurisdiction.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.jurisdiction_phone.id_for_label }}" class="form-label">
+                                            轄區電話
+                                        </label>
+                                        {{ form.jurisdiction_phone }}
+                                        {% if form.jurisdiction_phone.errors %}
+                                        <div class="text-danger small">{{ form.jurisdiction_phone.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.handler.id_for_label }}" class="form-label">
+                                            承辦人
+                                        </label>
+                                        {{ form.handler }}
+                                        {% if form.handler.errors %}
+                                        <div class="text-danger small">{{ form.handler.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.handler_phone.id_for_label }}" class="form-label">
+                                            承辦人電話
+                                        </label>
+                                        {{ form.handler_phone }}
+                                        {% if form.handler_phone.errors %}
+                                        <div class="text-danger small">{{ form.handler_phone.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.handler_email.id_for_label }}" class="form-label">
+                                            承辦人Email
+                                        </label>
+                                        {{ form.handler_email }}
+                                        {% if form.handler_email.errors %}
+                                        <div class="text-danger small">{{ form.handler_email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.fax.id_for_label }}" class="form-label">
+                                        傳真
+                                    </label>
+                                    {{ form.fax }}
+                                    {% if form.fax.errors %}
+                                    <div class="text-danger small">{{ form.fax.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.summary.id_for_label }}" class="form-label">
+                                        摘要
+                                    </label>
+                                    {{ form.summary }}
+                                    {% if form.summary.errors %}
+                                    <div class="text-danger small">{{ form.summary.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.attachment.id_for_label }}" class="form-label">
+                                        上傳檔案
+                                    </label>
+                                    {{ form.attachment }}
+                                    {% if form.attachment.errors %}
+                                    <div class="text-danger small">{{ form.attachment.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (3) 歷程 - 簡化為表格顯示 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-clock-history"></i> (3) 歷程紀錄</h5>
+                            </div>
+                            <div class="card-body">
+                                {{ formset.management_form }}
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 15%;">聯絡日期</th>
+                                                <th style="width: 50%;">討論內容</th>
+                                                <th style="width: 25%;">上傳附件</th>
+                                                <th style="width: 10%;">刪除</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="history-formset">
+                                            {% for history_form in formset %}
+                                            <tr class="history-form-row">
+                                                <td>
+                                                    {{ history_form.id }}
+                                                    {{ history_form.contact_date }}
+                                                    {% if history_form.contact_date.errors %}
+                                                    <div class="text-danger small">{{ history_form.contact_date.errors
+                                                        }}</div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{ history_form.discussion_content }}
+                                                    {% if history_form.discussion_content.errors %}
+                                                    <div class="text-danger small">{{
+                                                        history_form.discussion_content.errors }}</div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{ history_form.attachment }}
+                                                    {% if history_form.attachment.errors %}
+                                                    <div class="text-danger small">{{ history_form.attachment.errors }}
+                                                    </div>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    {{ history_form.DELETE }}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <button type="button" class="btn btn-secondary btn-sm" id="add-history">
+                                    <i class="bi bi-plus-circle"></i> 新增歷程
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'booking:tax_audit_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> 儲存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // AJAX: 客戶選擇後自動帶入資料
+        const customerSelect = document.getElementById('id_customer');
+        const companyNameInput = document.getElementById('id_company_name');
+        const emailInput = document.getElementById('id_email');
+
+        if (customerSelect) {
+            customerSelect.addEventListener('change', function () {
+                const customerId = this.value;
+
+                if (customerId) {
+                    fetch(`/booking/api/customer-data/?customer_id=${customerId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                companyNameInput.value = data.company_name;
+                                emailInput.value = data.email;
+                            } else {
+                                console.error('Error:', data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fetch error:', error);
+                        });
+                } else {
+                    companyNameInput.value = '';
+                    emailInput.value = '';
+                }
+            });
+        }
+
+        // 動態新增歷程表單（表格版本）
+        const addHistoryBtn = document.getElementById('add-history');
+        if (addHistoryBtn) {
+            addHistoryBtn.addEventListener('click', function () {
+                const formsetBody = document.getElementById('history-formset');
+                const totalForms = document.querySelector('#id_histories-TOTAL_FORMS');
+                const formNum = parseInt(totalForms.value);
+
+                // 複製第一行作為模板
+                const firstRow = formsetBody.querySelector('.history-form-row');
+                const newRow = firstRow.cloneNode(true);
+
+                // 更新表單索引
+                const formRegex = new RegExp('histories-(\\d+)-', 'g');
+                newRow.innerHTML = newRow.innerHTML.replace(formRegex, `histories-${formNum}-`);
+
+                // 清空欄位值
+                newRow.querySelectorAll('input, textarea').forEach(input => {
+                    if (input.type !== 'hidden' && input.type !== 'checkbox') {
+                        input.value = '';
+                    } else if (input.type === 'checkbox') {
+                        input.checked = false;
+                    }
+                });
+
+                // 添加新行
+                formsetBody.appendChild(newRow);
+
+                // 更新TOTAL_FORMS
+                totalForms.value = formNum + 1;
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

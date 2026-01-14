@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ action }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- (1) 基本資料 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-building"></i> (1) 基本資料</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.company_name.id_for_label }}" class="form-label">
+                                            公司名稱 <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.company_name }}
+                                        {% if form.company_name.errors %}
+                                        <div class="text-danger small">{{ form.company_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.company_id.id_for_label }}" class="form-label">
+                                            統一編號 <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.company_id }}
+                                        {% if form.company_id.errors %}
+                                        <div class="text-danger small">{{ form.company_id.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.tax_id.id_for_label }}" class="form-label">
+                                            稅籍編號
+                                        </label>
+                                        {{ form.tax_id }}
+                                        {% if form.tax_id.errors %}
+                                        <div class="text-danger small">{{ form.tax_id.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.contact_person.id_for_label }}" class="form-label">
+                                            聯絡人 <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.contact_person }}
+                                        {% if form.contact_person.errors %}
+                                        <div class="text-danger small">{{ form.contact_person.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                                            Email
+                                        </label>
+                                        {{ form.email }}
+                                        {% if form.email.errors %}
+                                        <div class="text-danger small">{{ form.email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                            電話
+                                        </label>
+                                        {{ form.phone }}
+                                        {% if form.phone.errors %}
+                                        <div class="text-danger small">{{ form.phone.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.line_id.id_for_label }}" class="form-label">
+                                            Line ID
+                                        </label>
+                                        {{ form.line_id }}
+                                        {% if form.line_id.errors %}
+                                        <div class="text-danger small">{{ form.line_id.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.business_password.id_for_label }}" class="form-label">
+                                            營業人密碼
+                                        </label>
+                                        {{ form.business_password }}
+                                        {% if form.business_password.errors %}
+                                        <div class="text-danger small">{{ form.business_password.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.registration_address.id_for_label }}" class="form-label">
+                                        登記地址 <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.registration_address }}
+                                    {% if form.registration_address.errors %}
+                                    <div class="text-danger small">{{ form.registration_address.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.mailing_address.id_for_label }}" class="form-label">
+                                        通訊地址
+                                    </label>
+                                    {{ form.mailing_address }}
+                                    <small class="form-text text-muted">若未填寫，則與登記地址相同</small>
+                                    {% if form.mailing_address.errors %}
+                                    <div class="text-danger small">{{ form.mailing_address.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (2) 承接資料 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-briefcase"></i> (2) 承接資料</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.charge_status.id_for_label }}" class="form-label">
+                                            收費狀態
+                                        </label>
+                                        {{ form.charge_status }}
+                                        {% if form.charge_status.errors %}
+                                        <div class="text-danger small">{{ form.charge_status.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.charge_method.id_for_label }}" class="form-label">
+                                            收費方式
+                                        </label>
+                                        {{ form.charge_method }}
+                                        {% if form.charge_method.errors %}
+                                        <div class="text-danger small">{{ form.charge_method.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.undertaking_status.id_for_label }}" class="form-label">
+                                            承接狀態
+                                        </label>
+                                        {{ form.undertaking_status }}
+                                        {% if form.undertaking_status.errors %}
+                                        <div class="text-danger small">{{ form.undertaking_status.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (3) 營業人資料 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-person-badge"></i> (3) 營業人資料</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.industry_code.id_for_label }}" class="form-label">
+                                            行業代碼
+                                        </label>
+                                        {{ form.industry_code }}
+                                        {% if form.industry_code.errors %}
+                                        <div class="text-danger small">{{ form.industry_code.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.industry_name.id_for_label }}" class="form-label">
+                                            行業名稱
+                                        </label>
+                                        {{ form.industry_name }}
+                                        {% if form.industry_name.errors %}
+                                        <div class="text-danger small">{{ form.industry_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.business_type.id_for_label }}" class="form-label">
+                                        營業人類型
+                                    </label>
+                                    {{ form.business_type }}
+                                    {% if form.business_type.errors %}
+                                    <div class="text-danger small">{{ form.business_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.e_invoice_account.id_for_label }}" class="form-label">
+                                            電子發票帳號
+                                        </label>
+                                        {{ form.e_invoice_account }}
+                                        {% if form.e_invoice_account.errors %}
+                                        <div class="text-danger small">{{ form.e_invoice_account.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.e_invoice_password.id_for_label }}" class="form-label">
+                                            電子發票密碼
+                                        </label>
+                                        {{ form.e_invoice_password }}
+                                        {% if form.e_invoice_password.errors %}
+                                        <div class="text-danger small">{{ form.e_invoice_password.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.invoice_purchase_method.id_for_label }}" class="form-label">
+                                            買發票方式
+                                        </label>
+                                        {{ form.invoice_purchase_method }}
+                                        {% if form.invoice_purchase_method.errors %}
+                                        <div class="text-danger small">{{ form.invoice_purchase_method.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.invoice_delivery_method.id_for_label }}" class="form-label">
+                                            送發票方式
+                                        </label>
+                                        {{ form.invoice_delivery_method }}
+                                        {% if form.invoice_delivery_method.errors %}
+                                        <div class="text-danger small">{{ form.invoice_delivery_method.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.invoice_receive_method.id_for_label }}" class="form-label">
+                                            收發票方式
+                                        </label>
+                                        {{ form.invoice_receive_method }}
+                                        {% if form.invoice_receive_method.errors %}
+                                        <div class="text-danger small">{{ form.invoice_receive_method.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (4) 繳稅及通知 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-receipt"></i> (4) 繳稅及通知</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.tax_payment.id_for_label }}" class="form-label">
+                                            繳稅
+                                        </label>
+                                        {{ form.tax_payment }}
+                                        {% if form.tax_payment.errors %}
+                                        <div class="text-danger small">{{ form.tax_payment.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.notification_method.id_for_label }}" class="form-label">
+                                            通知方式
+                                        </label>
+                                        {{ form.notification_method }}
+                                        {% if form.notification_method.errors %}
+                                        <div class="text-danger small">{{ form.notification_method.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (5) 其他 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-card-text"></i> (5) 其他</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.important_notes.id_for_label }}" class="form-label">
+                                        重要備註
+                                    </label>
+                                    {{ form.important_notes }}
+                                    {% if form.important_notes.errors %}
+                                    <div class="text-danger small">{{ form.important_notes.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'booking:customer_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> 儲存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartFirm{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- 左側導覽列 -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4 class="mb-0">SmartFirm</h4>
+            <button class="sidebar-toggle" id="sidebarToggle" title="收起側邊欄">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{% url 'dashboard:index' %}"
+                    class="sidebar-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}"
+                    title="Dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <!-- 管理系統 - 可展開選單 -->
+            <li class="sidebar-menu-item">
+                <a href="#"
+                    class="sidebar-link sidebar-link-parent {% if request.resolver_match.app_name == 'admin_module' %}active{% endif %}"
+                    data-bs-toggle="collapse" data-bs-target="#adminSubmenu"
+                    aria-expanded="{% if request.resolver_match.app_name == 'admin_module' %}true{% else %}false{% endif %}"
+                    title="管理系統">
+                    <i class="bi bi-people"></i>
+                    <span>管理系統</span>
+                    <i class="bi bi-chevron-down submenu-arrow"></i>
+                </a>
+                <ul class="collapse submenu {% if request.resolver_match.app_name == 'admin_module' %}show{% endif %}"
+                    id="adminSubmenu">
+                    <li>
+                        <a href="{% url 'admin_module:customer_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'customer' in request.path %}active{% endif %}"
+                            title="客戶列表">
+                            <i class="bi bi-building"></i>
+                            <span>客戶列表</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_module:contact_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'contact' in request.path %}active{% endif %}"
+                            title="聯絡人列表">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>聯絡人列表</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_module:incoming_mail_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'incoming-mail' in request.path %}active{% endif %}"
+                            title="收文系統">
+                            <i class="bi bi-envelope-open"></i>
+                            <span>收文系統</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_module:customer_change_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'customer-change' in request.path %}active{% endif %}"
+                            title="客戶增減">
+                            <i class="bi bi-arrow-left-right"></i>
+                            <span>客戶增減</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_module:vat_check_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'vat-check' in request.path %}active{% endif %}"
+                            title="營業稅檢查">
+                            <i class="bi bi-calculator"></i>
+                            <span>營業稅檢查</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_module:bookkeeping_checklist_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'bookkeeping-checklist' in request.path %}active{% endif %}"
+                            title="記帳進度檢查">
+                            <i class="bi bi-journal-check"></i>
+                            <span>記帳進度檢查</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="/audit/"
+                    class="sidebar-link {% if request.resolver_match.app_name == 'audit' %}active{% endif %}"
+                    title="稽核系統">
+                    <i class="bi bi-file-earmark-check"></i>
+                    <span>稽核系統</span>
+                </a>
+            </li>
+            <!-- 註冊系統 - 可展開選單 -->
+            <li class="sidebar-menu-item">
+                <a href="#"
+                    class="sidebar-link sidebar-link-parent {% if request.resolver_match.app_name == 'registration' %}active{% endif %}"
+                    data-bs-toggle="collapse" data-bs-target="#registrationSubmenu"
+                    aria-expanded="{% if request.resolver_match.app_name == 'registration' %}true{% else %}false{% endif %}"
+                    title="登記系統">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>登記系統</span>
+                    <i class="bi bi-chevron-down submenu-arrow"></i>
+                </a>
+                <ul class="collapse submenu {% if request.resolver_match.app_name == 'registration' %}show{% endif %}"
+                    id="registrationSubmenu">
+                    <li>
+                        <a href="/registration/"
+                            class="sidebar-link sidebar-sublink {% if request.path == '/registration/' %}active{% endif %}"
+                            title="登記首頁">
+                            <i class="bi bi-house"></i>
+                            <span>登記首頁</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_module:customer_list' %}" class="sidebar-link sidebar-sublink"
+                            title="客戶列表">
+                            <i class="bi bi-building"></i>
+                            <span>客戶列表</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <!-- 記帳系統 - 可展開選單 -->
+            <li class="sidebar-menu-item">
+                <a href="#"
+                    class="sidebar-link sidebar-link-parent {% if request.resolver_match.app_name == 'booking' %}active{% endif %}"
+                    data-bs-toggle="collapse" data-bs-target="#bookingSubmenu"
+                    aria-expanded="{% if request.resolver_match.app_name == 'booking' %}true{% else %}false{% endif %}"
+                    title="記帳系統">
+                    <i class="bi bi-journal-text"></i>
+                    <span>記帳系統</span>
+                    <i class="bi bi-chevron-down submenu-arrow"></i>
+                </a>
+                <ul class="collapse submenu {% if request.resolver_match.app_name == 'booking' %}show{% endif %}"
+                    id="bookingSubmenu">
+                    <li>
+                        <a href="{% url 'booking:customer_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'customers' in request.path %}active{% endif %}"
+                            title="客戶列表">
+                            <i class="bi bi-building"></i>
+                            <span>客戶列表</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'booking:tax_audit_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'tax-audit' in request.path %}active{% endif %}"
+                            title="國稅局查帳">
+                            <i class="bi bi-file-earmark-check"></i>
+                            <span>國稅局查帳</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 主要內容區域 -->
+    <div class="main-content">
+        <!-- 頂部工具列（可選） -->
+        <div class="top-bar">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% block page_header %}{% endblock %}</h5>
+                    <div>
+                        <!-- 可添加使用者選單、通知等 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要內容 -->
+        <main class="content-area">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'js/custom.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

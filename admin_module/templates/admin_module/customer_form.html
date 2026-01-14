@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ action }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.companyId.id_for_label }}" class="form-label">
+                                    公司統編 <span class="text-danger">*</span>
+                                </label>
+                                {{ form.companyId }}
+                                {% if form.companyId.errors %}
+                                <div class="text-danger small">{{ form.companyId.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.companyName.id_for_label }}" class="form-label">
+                                    公司名稱 <span class="text-danger">*</span>
+                                </label>
+                                {{ form.companyName }}
+                                {% if form.companyName.errors %}
+                                <div class="text-danger small">{{ form.companyName.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.contact.id_for_label }}" class="form-label">
+                                    聯絡人 <span class="text-danger">*</span>
+                                </label>
+                                {{ form.contact }}
+                                {% if form.contact.errors %}
+                                <div class="text-danger small">{{ form.contact.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    電子郵件
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger small">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phoneNumber.id_for_label }}" class="form-label">
+                                    公司電話
+                                </label>
+                                {{ form.phoneNumber }}
+                                {% if form.phoneNumber.errors %}
+                                <div class="text-danger small">{{ form.phoneNumber.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                    聯絡人手機
+                                </label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                <div class="text-danger small">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fax_number.id_for_label }}" class="form-label">
+                                    傳真號碼
+                                </label>
+                                {{ form.fax_number }}
+                                {% if form.fax_number.errors %}
+                                <div class="text-danger small">{{ form.fax_number.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.account_last_5.id_for_label }}" class="form-label">
+                                    帳號後五碼
+                                </label>
+                                {{ form.account_last_5 }}
+                                {% if form.account_last_5.errors %}
+                                <div class="text-danger small">{{ form.account_last_5.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.LineId.id_for_label }}" class="form-label">
+                                Line ID
+                            </label>
+                            {{ form.LineId }}
+                            {% if form.LineId.errors %}
+                            <div class="text-danger small">{{ form.LineId.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.registration_address.id_for_label }}" class="form-label">
+                                登記地址 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.registration_address }}
+                            {% if form.registration_address.errors %}
+                            <div class="text-danger small">{{ form.registration_address.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.mailing_address.id_for_label }}" class="form-label">
+                                通訊地址
+                            </label>
+                            {{ form.mailing_address }}
+                            <small class="form-text text-muted">若未填寫，則與登記地址相同</small>
+                            {% if form.mailing_address.errors %}
+                            <div class="text-danger small">{{ form.mailing_address.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.important_notes.id_for_label }}" class="form-label">
+                                重要訊息描述
+                            </label>
+                            {{ form.important_notes }}
+                            {% if form.important_notes.errors %}
+                            <div class="text-danger small">{{ form.important_notes.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'admin_module:customer_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> 儲存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+
+                    <!-- 聯絡人選擇區域 -->
+                    <div class="container mt-4">
+                        <div class="mt-5 pt-4 border-top" id="contactSection">
+                            <h5 class="mb-3">
+                                <i class="bi bi-person-lines-fill"></i> 相同統編的聯絡人
+                                <span class="badge bg-secondary" id="contactCount">0</span>
+                            </h5>
+                            <div id="contactList">
+                                <p class="text-muted">請先輸入公司統編，系統將自動載入相同統編的聯絡人列表。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const companyIdInput = document.getElementById('id_companyId');
+            const contactSection = document.getElementById('contactSection');
+            const contactList = document.getElementById('contactList');
+            const contactCount = document.getElementById('contactCount');
+
+            // 監聽統編欄位變化
+            if (companyIdInput) {
+                companyIdInput.addEventListener('blur', function () {
+                    loadContacts(this.value.trim());
+                });
+
+                // 如果是編輯模式且已有統編，自動載入
+                if (companyIdInput.value) {
+                    loadContacts(companyIdInput.value.trim());
+                }
+            }
+
+            // 載入聯絡人列表
+            function loadContacts(companyId) {
+                if (!companyId || companyId.length !== 8) {
+                    contactList.innerHTML = '<p class="text-muted">請輸入有效的8位數公司統編。</p>';
+                    contactCount.textContent = '0';
+                    return;
+                }
+
+                // 顯示載入中
+                contactList.innerHTML = '<p class="text-muted"><i class="bi bi-hourglass-split"></i> 載入中...</p>';
+
+                // 使用 Fetch API 取得聯絡人
+                fetch(`/admin-module/api/contacts/?company_id=${encodeURIComponent(companyId)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            contactList.innerHTML = '<p class="text-muted">沒有找到相同統編的聯絡人。</p>';
+                            contactCount.textContent = '0';
+                            return;
+                        }
+
+                        contactCount.textContent = data.length;
+
+                        // 建立聯絡人表格
+                        let html = '<div class="table-responsive"><table class="table table-hover table-sm">';
+                        html += '<thead><tr>';
+                        html += '<th width="50">選擇</th>';
+                        html += '<th>姓名</th>';
+                        html += '<th>職稱</th>';
+                        html += '<th>Email</th>';
+                        html += '<th>手機</th>';
+                        html += '</tr></thead><tbody>';
+
+                        data.forEach(contact => {
+                            html += '<tr>';
+                            html += `<td><div class="form-check"><input class="form-check-input contact-checkbox" type="checkbox" value="${contact.id}" data-contact='${JSON.stringify(contact)}'></div></td>`;
+                            html += `<td>${contact.name}</td>`;
+                            html += `<td>${contact.position || '—'}</td>`;
+                            html += `<td>${contact.email || '—'}</td>`;
+                            html += `<td>${contact.mobile || '—'}</td>`;
+                            html += '</tr>';
+                        });
+
+                        html += '</tbody></table></div>';
+                        contactList.innerHTML = html;
+
+                        // 綁定勾選事件
+                        document.querySelectorAll('.contact-checkbox').forEach(checkbox => {
+                            checkbox.addEventListener('change', function () {
+                                if (this.checked) {
+                                    // 取消其他勾選
+                                    document.querySelectorAll('.contact-checkbox').forEach(cb => {
+                                        if (cb !== this) cb.checked = false;
+                                    });
+
+                                    // 填入聯絡人資訊
+                                    const contact = JSON.parse(this.dataset.contact);
+                                    fillContactData(contact);
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('載入聯絡人失敗:', error);
+                        contactList.innerHTML = '<p class="text-danger">載入聯絡人時發生錯誤，請稍後再試。</p>';
+                    });
+            }
+
+            // 填入聯絡人資訊到客戶表單
+            function fillContactData(contact) {
+                // 填入聯絡人姓名
+                const contactInput = document.getElementById('id_contact');
+                if (contactInput) contactInput.value = contact.name;
+
+                // 填入 Email
+                const emailInput = document.getElementById('id_email');
+                if (emailInput && contact.email) emailInput.value = contact.email;
+
+                // 填入手機
+                const phoneInput = document.getElementById('id_phone');
+                if (phoneInput && contact.mobile) phoneInput.value = contact.mobile;
+
+                // 填入 Line ID (如果有的話，這裡假設聯絡人沒有 Line ID，可以根據需求調整)
+
+                // 顯示成功提示
+                showToast('已填入聯絡人資訊');
+            }
+
+            // 簡單的 Toast 提示
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+                toast.style.zIndex = '9999';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 2000);
+            }
+        });
+    </script>
+    {% endblock %}
+    {% endblock %}
