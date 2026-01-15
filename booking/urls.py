@@ -12,6 +12,7 @@ urlpatterns = [
     
     # API
     path('api/customer-data/', views.get_customer_data, name='get_customer_data'),
+    path('api/search-customers/', views.search_customers, name='search_customers'),
     
     # 查帳紀錄管理
     path('tax-audit/', views.tax_audit_list, name='tax_audit_list'),

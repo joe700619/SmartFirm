@@ -3,8 +3,39 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.forms import inlineformset_factory
+from django.db.models import Q
 from .models import BookingCustomer, TaxAuditRecord, TaxAuditHistory
 from .forms import BookingCustomerForm, BookingCustomerFilterForm, TaxAuditRecordForm, TaxAuditHistoryForm
+from admin_module.models import BasicInformation
+
+
+def search_customers(request):
+    """搜尋客戶API（從管理系統的BasicInformation）"""
+    search_term = request.GET.get('q', '')
+    
+    if not search_term or len(search_term) < 1:
+        return JsonResponse({'customers': []})
+    
+    # 搜尋公司名稱或統一編號（使用正確的欄位名稱）
+    customers = BasicInformation.objects.filter(
+        Q(companyName__icontains=search_term) | 
+        Q(companyId__icontains=search_term)
+    )[:20]  # 限制最多返回20筆結果
+    
+    results = []
+    for customer in customers:
+        results.append({
+            'id': customer.id,
+            'company_name': customer.companyName,
+            'unified_business_number': customer.companyId or '',
+            'tax_id_number': '',  # BasicInformation沒有稅籍編號欄位
+            'registration_address': customer.registration_address or '',
+            'contact_person': customer.contact or '',
+            'phone': customer.phone or customer.phoneNumber or '',
+            'email': customer.email or '',
+        })
+    
+    return JsonResponse({'customers': results})
 
 
 def customer_list(request):

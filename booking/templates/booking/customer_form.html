@@ -34,7 +34,14 @@
                                         <label for="{{ form.company_name.id_for_label }}" class="form-label">
                                             公司名稱 <span class="text-danger">*</span>
                                         </label>
-                                        {{ form.company_name }}
+                                        <div class="input-group">
+                                            {{ form.company_name }}
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                id="search-customer-btn">
+                                                <i class="bi bi-search"></i> 搜尋
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">點擊「搜尋」按鈕從管理系統選擇客戶</small>
                                         {% if form.company_name.errors %}
                                         <div class="text-danger small">{{ form.company_name.errors }}</div>
                                         {% endif %}
@@ -271,6 +278,55 @@
                                         {% endif %}
                                     </div>
                                 </div>
+
+                                <!-- 發票數量（僅當選擇"統購"時顯示） -->
+                                <div id="invoice-quantity-section" class="border-top pt-3 mt-3" style="display: none;">
+                                    <h6 class="text-primary mb-3"><i class="bi bi-receipt"></i> 發票數量</h6>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_2_copy.id_for_label }}"
+                                                class="form-label">二聯</label>
+                                            {{ form.invoice_qty_2_copy }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_2_副copy.id_for_label }}"
+                                                class="form-label">二聯副</label>
+                                            {{ form.invoice_qty_2_副copy }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_3_copy.id_for_label }}"
+                                                class="form-label">三聯</label>
+                                            {{ form.invoice_qty_3_copy }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_3_副copy.id_for_label }}"
+                                                class="form-label">三聯副</label>
+                                            {{ form.invoice_qty_3_副copy }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_special.id_for_label }}"
+                                                class="form-label">特種</label>
+                                            {{ form.invoice_qty_special }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_2_cashier.id_for_label }}"
+                                                class="form-label">二收銀</label>
+                                            {{ form.invoice_qty_2_cashier }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_3_cashier.id_for_label }}"
+                                                class="form-label">三收銀</label>
+                                            {{ form.invoice_qty_3_cashier }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="{{ form.invoice_qty_3_cashier_副.id_for_label }}"
+                                                class="form-label">三收銀副</label>
+                                            {{ form.invoice_qty_3_cashier_副 }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -282,9 +338,7 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="{{ form.tax_payment.id_for_label }}" class="form-label">
-                                            繳稅
-                                        </label>
+                                        <label for="{{ form.tax_payment.id_for_label }}" class="form-label">繳稅</label>
                                         {{ form.tax_payment }}
                                         {% if form.tax_payment.errors %}
                                         <div class="text-danger small">{{ form.tax_payment.errors }}</div>
@@ -292,9 +346,8 @@
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label for="{{ form.notification_method.id_for_label }}" class="form-label">
-                                            通知方式
-                                        </label>
+                                        <label for="{{ form.notification_method.id_for_label }}"
+                                            class="form-label">通知方式</label>
                                         {{ form.notification_method }}
                                         {% if form.notification_method.errors %}
                                         <div class="text-danger small">{{ form.notification_method.errors }}</div>
@@ -311,13 +364,68 @@
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
-                                    <label for="{{ form.important_notes.id_for_label }}" class="form-label">
-                                        重要備註
-                                    </label>
+                                    <label for="{{ form.important_notes.id_for_label }}" class="form-label">重要備註</label>
                                     {{ form.important_notes }}
                                     {% if form.important_notes.errors %}
                                     <div class="text-danger small">{{ form.important_notes.errors }}</div>
                                     {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (6) 記帳助理 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-people"></i> (6) 記帳助理</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.bookkeeping_assistant.id_for_label }}"
+                                            class="form-label">記帳助理</label>
+                                        {{ form.bookkeeping_assistant }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.assistant_ratio.id_for_label }}" class="form-label">助理比例
+                                            (%)</label>
+                                        {{ form.assistant_ratio }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.group_contact.id_for_label }}"
+                                            class="form-label">集團窗口</label>
+                                        {{ form.group_contact }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.contact_ratio.id_for_label }}" class="form-label">窗口比例
+                                            (%)</label>
+                                        {{ form.contact_ratio }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.reviewer.id_for_label }}"
+                                            class="form-label">review人員</label>
+                                        {{ form.reviewer }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.reviewer_ratio.id_for_label }}" class="form-label">review比例
+                                            (%)</label>
+                                        {{ form.reviewer_ratio }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.business_registration.id_for_label }}"
+                                            class="form-label">工商</label>
+                                        {{ form.business_registration }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.business_registration_ratio.id_for_label }}"
+                                            class="form-label">工商比例 (%)</label>
+                                        {{ form.business_registration_ratio }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -336,4 +444,124 @@
         </div>
     </div>
 </div>
+
+<!-- 客戶搜尋 Modal -->
+<div class="modal fade" id="customerSearchModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-search"></i> 搜尋客戶（從管理系統）</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="customer-search-input" class="form-label">搜尋公司名稱或統一編號</label>
+                    <input type="text" class="form-control" id="customer-search-input" placeholder="輸入公司名稱或統一編號...">
+                    <small class="form-text text-muted">輸入至少1個字元開始搜尋</small>
+                </div>
+                <div id="search-results" class="list-group" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-search"></i>
+                        <p class="mb-0">請輸入搜尋關鍵字</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 條件性顯示發票數量欄位
+        const invoicePurchaseMethod = document.getElementById('{{ form.invoice_purchase_method.id_for_label }}');
+        const invoiceQuantitySection = document.getElementById('invoice-quantity-section');
+
+        function toggleInvoiceQuantity() {
+            if (invoicePurchaseMethod && invoiceQuantitySection) {
+                invoiceQuantitySection.style.display = invoicePurchaseMethod.value === 'unified_purchase' ? 'block' : 'none';
+            }
+        }
+
+        if (invoicePurchaseMethod) {
+            toggleInvoiceQuantity();
+            invoicePurchaseMethod.addEventListener('change', toggleInvoiceQuantity);
+        }
+
+        // 客戶搜尋模態框
+        const searchBtn = document.getElementById('search-customer-btn');
+        const customerModal = new bootstrap.Modal(document.getElementById('customerSearchModal'));
+        const searchInput = document.getElementById('customer-search-input');
+        const searchResults = document.getElementById('search-results');
+        let searchTimeout;
+
+        if (searchBtn) {
+            searchBtn.addEventListener('click', function () {
+                customerModal.show();
+                setTimeout(() => searchInput.focus(), 500);
+            });
+        }
+
+        // 搜尋客戶
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 1) {
+                    searchResults.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-search"></i><p class="mb-0">請輸入搜尋關鍵字</p></div>';
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch('/booking/api/search-customers/?q=' + encodeURIComponent(query))
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.customers.length === 0) {
+                                searchResults.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-exclamation-circle"></i><p class="mb-0">找不到符合的客戶</p></div>';
+                                return;
+                            }
+
+                            let html = '';
+                            data.customers.forEach(customer => {
+                                html += '<a href="#" class="list-group-item list-group-item-action customer-item" data-customer=\'' + JSON.stringify(customer) + '\'>';
+                                html += '<div class="d-flex w-100 justify-content-between">';
+                                html += '<h6 class="mb-1">' + customer.company_name + '</h6>';
+                                html += '<small class="text-muted">' + customer.unified_business_number + '</small>';
+                                html += '</div>';
+                                html += '<small class="text-muted">' + (customer.registration_address || '無地址資料') + '</small>';
+                                html += '</a>';
+                            });
+                            searchResults.innerHTML = html;
+
+                            // 添加點擊事件
+                            document.querySelectorAll('.customer-item').forEach(item => {
+                                item.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    const customer = JSON.parse(this.dataset.customer);
+
+                                    // 填入客戶資料
+                                    document.getElementById('{{ form.company_name.id_for_label }}').value = customer.company_name;
+                                    document.getElementById('{{ form.company_id.id_for_label }}').value = customer.unified_business_number;
+                                    document.getElementById('{{ form.tax_id.id_for_label }}').value = customer.tax_id_number;
+                                    document.getElementById('{{ form.registration_address.id_for_label }}').value = customer.registration_address;
+                                    document.getElementById('{{ form.contact_person.id_for_label }}').value = customer.contact_person;
+                                    document.getElementById('{{ form.phone.id_for_label }}').value = customer.phone;
+                                    document.getElementById('{{ form.email.id_for_label }}').value = customer.email;
+
+                                    // 關閉modal
+                                    customerModal.hide();
+                                    searchInput.value = '';
+                                    searchResults.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-search"></i><p class="mb-0">請輸入搜尋關鍵字</p></div>';
+                                });
+                            });
+                        })
+                        .catch(error => {
+                            console.error('搜尋錯誤:', error);
+                            searchResults.innerHTML = '<div class="alert alert-danger">搜尋時發生錯誤，請稍後再試</div>';
+                        });
+                }, 300);
+            });
+        }
+    });
+</script>
 {% endblock %}

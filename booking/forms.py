@@ -1,5 +1,6 @@
 from django import forms
 from .models import BookingCustomer, TaxAuditRecord, TaxAuditHistory
+from admin_module.models import BasicInformation
 
 
 class BookingCustomerForm(forms.ModelForm):
@@ -19,8 +20,15 @@ class BookingCustomerForm(forms.ModelForm):
             'e_invoice_account', 'e_invoice_password',
             'invoice_purchase_method', 'invoice_delivery_method',
             'invoice_receive_method',
+            # 發票數量
+            'invoice_qty_2_copy', 'invoice_qty_2_副copy', 'invoice_qty_3_copy',
+            'invoice_qty_3_副copy', 'invoice_qty_special', 'invoice_qty_2_cashier',
+            'invoice_qty_3_cashier', 'invoice_qty_3_cashier_副',
             # 繳稅及通知
             'tax_payment', 'notification_method',
+            # 記帳助理
+            'bookkeeping_assistant', 'assistant_ratio', 'group_contact', 'contact_ratio',
+            'reviewer', 'reviewer_ratio', 'business_registration', 'business_registration_ratio',
             # 其他
             'important_notes',
         ]
@@ -108,12 +116,98 @@ class BookingCustomerForm(forms.ModelForm):
             'invoice_receive_method': forms.Select(attrs={
                 'class': 'form-select'
             }),
+            # 發票數量
+            'invoice_qty_2_copy': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'invoice_qty_2_副copy': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'invoice_qty_3_copy': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'invoice_qty_3_副copy': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'invoice_qty_special': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'invoice_qty_2_cashier': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'invoice_qty_3_cashier': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'invoice_qty_3_cashier_副': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': '0'
+            }),
             # 繳稅及通知
             'tax_payment': forms.Select(attrs={
                 'class': 'form-select'
             }),
             'notification_method': forms.Select(attrs={
                 'class': 'form-select'
+            }),
+            # 記帳助理
+            'bookkeeping_assistant': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '請輸入記帳助理姓名'
+            }),
+            'assistant_ratio': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'max': '100',
+                'step': '0.01',
+                'placeholder': '0.00'
+            }),
+            'group_contact': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '請輸入集團窗口姓名'
+            }),
+            'contact_ratio': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'max': '100',
+                'step': '0.01',
+                'placeholder': '0.00'
+            }),
+            'reviewer': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '請輸入review人員姓名'
+            }),
+            'reviewer_ratio': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'max': '100',
+                'step': '0.01',
+                'placeholder': '0.00'
+            }),
+            'business_registration': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '請輸入工商人員姓名'
+            }),
+            'business_registration_ratio': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'max': '100',
+                'step': '0.01',
+                'placeholder': '0.00'
             }),
             # 其他
             'important_notes': forms.Textarea(attrs={

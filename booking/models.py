@@ -204,7 +204,115 @@ class BookingCustomer(models.Model):
         verbose_name='通知方式'
     )
     
-    # ==================== (5) 其他 ====================
+    # ==================== 發票數量（當買發票方式為"統購"時使用） ====================
+    invoice_qty_2_copy = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='二聯'
+    )
+    invoice_qty_2_副copy = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='二聯副'
+    )
+    invoice_qty_3_copy = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='三聯'
+    )
+    invoice_qty_3_副copy = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='三聯副'
+    )
+    invoice_qty_special = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='特種'
+    )
+    invoice_qty_2_cashier = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='二收銀'
+    )
+    invoice_qty_3_cashier = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='三收銀'
+    )
+    invoice_qty_3_cashier_副 = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='三收銀副'
+    )
+    
+    # ==================== (6) 記帳助理 ====================
+    bookkeeping_assistant = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='記帳助理'
+    )
+    assistant_ratio = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name='助理比例',
+        help_text='請輸入0-100之間的數字'
+    )
+    group_contact = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='集團窗口'
+    )
+    contact_ratio = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name='窗口比例',
+        help_text='請輸入0-100之間的數字'
+    )
+    reviewer = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='review人員'
+    )
+    reviewer_ratio = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name='review比例',
+        help_text='請輸入0-100之間的數字'
+    )
+    business_registration = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='工商'
+    )
+    business_registration_ratio = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name='工商比例',
+        help_text='請輸入0-100之間的數字'
+    )
+    
+    # ==================== (7) 其他 ====================
     important_notes = models.TextField(
         blank=True,
         null=True,
