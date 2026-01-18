@@ -539,3 +539,633 @@ class TaxAuditHistory(models.Model):
     def __str__(self):
         return f"{self.audit_record.company_name} - {self.contact_date}"
 
+
+class VATRecord(models.Model):
+    """營業稅申報記錄模型"""
+    
+    # ==================== (1) 基本資料（來自客戶，不可編輯） ====================
+    customer = models.ForeignKey(
+        BookingCustomer,
+        on_delete=models.PROTECT,
+        verbose_name='客戶',
+        help_text='選擇客戶以自動帶入基本資料'
+    )
+    
+    # ==================== (2) 本期資料（可編輯） ====================
+    FILING_PERIOD_CHOICES = [
+        ('01', '01'),
+        ('02', '02'),
+        ('03', '03'),
+        ('04', '04'),
+        ('05', '05'),
+        ('06', '06'),
+        ('07', '07'),
+        ('08', '08'),
+        ('09', '09'),
+        ('10', '10'),
+        ('11', '11'),
+        ('12', '12'),
+    ]
+    
+    filing_year = models.CharField(
+        max_length=4,
+        verbose_name='申報年度',
+        help_text='例如: 113'
+    )
+    
+    filing_period = models.CharField(
+        max_length=2,
+        choices=FILING_PERIOD_CHOICES,
+        verbose_name='申報期別'
+    )
+    
+    TAX_PAYABLE_CHOICES = [
+        ('yes', 'Yes'),
+        ('no', 'No'),
+    ]
+    
+    tax_payable = models.CharField(
+        max_length=3,
+        choices=TAX_PAYABLE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='是否繳稅'
+    )
+    
+    tax_deadline = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='繳稅截止日'
+    )
+    
+    invoice_received_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='收到發票日期'
+    )
+    
+    TAX_PAYMENT_STATUS_CHOICES = [
+        ('customer_paid', '客戶自己繳納'),
+        ('office_paid', '事務所代繳'),
+        ('not_replied', '還沒回覆'),
+    ]
+    
+    tax_payment_completed = models.CharField(
+        max_length=20,
+        choices=TAX_PAYMENT_STATUS_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='繳稅完成否'
+    )
+    
+    SOURCE_CHOICES = [
+        ('google', 'Google'),
+        ('manual', '自行輸入'),
+        ('na', 'NA'),
+    ]
+    
+    source = models.CharField(
+        max_length=30,
+        choices=SOURCE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='來源'
+    )
+    
+    reply_time = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='回覆時間'
+    )
+    
+    # ==================== 稅額資料 ====================
+    sales_amount = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='銷項金額',
+        help_text='輸入整數金額'
+    )
+    
+    purchase_amount = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='進項金額',
+        help_text='輸入整數金額'
+    )
+    
+    credit_carryforward = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='留底抵稅額',
+        help_text='輸入整數金額'
+    )
+    
+    tax_payable_amount = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='應納稅額',
+        help_text='輸入整數金額'
+    )
+    
+    tax_refund_amount = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='應退稅額',
+        help_text='輸入整數金額'
+    )
+    
+    # ==================== 完成狀態 ====================
+    COMPLETION_STATUS_CHOICES = [
+        ('completed', '已完成'),
+        ('not_started', '尚未開始'),
+    ]
+    
+    completion_status = models.CharField(
+        max_length=20,
+        choices=COMPLETION_STATUS_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='完成狀態'
+    )
+    
+    declaration_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='申報書網址'
+    )
+    
+    payment_slip_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='繳款書網址'
+    )
+    
+    # ==================== 系統欄位 ====================
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='建立時間'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='更新時間'
+    )
+    
+    class Meta:
+        db_table = 'vat_record'
+        verbose_name = '營業稅申報記錄'
+        verbose_name_plural = '營業稅申報記錄'
+        ordering = ['-filing_year', '-filing_period', '-created_at']
+        # 確保同一客戶的同一年度同一期別只有一筆記錄
+        unique_together = [['customer', 'filing_year', 'filing_period']]
+    
+    def __str__(self):
+        return f"{self.customer.company_name} - {self.filing_year}年{self.get_filing_period_display()}"
+
+
+# ==================== 所得稅申報記錄模型 ====================
+
+class IncomeTaxRecord(models.Model):
+    """所得稅申報記錄"""
+    
+    # ==================== 申報類別選項 ====================
+    FILING_TYPE_CHOICES = [
+        ('book_review', '書審'),
+        ('income_standard', '所標'),
+        ('account_audit', '查帳'),
+        ('accounting_sign', '會簽'),
+        ('other', '其他'),
+    ]
+    
+    # ==================== 客戶關聯 ====================
+    customer = models.ForeignKey(
+        BookingCustomer,
+        on_delete=models.PROTECT,
+        related_name='income_tax_records',
+        verbose_name='客戶'
+    )
+    
+    # ==================== 申報基本資訊 ====================
+    filing_year = models.IntegerField(
+        verbose_name='申報年度',
+        help_text='例如：113'
+    )
+    
+    important_notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='重要提醒事項',
+        help_text='顯示在表單頂部的重要提醒'
+    )
+    
+    # ==================== 暫繳區塊 ====================
+    provisional_payment = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='暫繳金額',
+        help_text='輸入整數金額，此金額會自動填入本稅區塊的暫繳-62欄'
+    )
+    
+    # ==================== 未分配區塊 ====================
+    dividend_distribution = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='股利分配金額',
+        help_text='輸入整數金額'
+    )
+    
+    # ==================== 本稅區塊 ====================
+    receipt_number = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name='收件編號'
+    )
+    
+    filing_type = models.CharField(
+        max_length=20,
+        choices=FILING_TYPE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='申報類別'
+    )
+    
+    # 應納稅額-60欄 (c)
+    tax_payable_col60 = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='應納稅額(60欄)',
+        help_text='輸入整數金額'
+    )
+    
+    # 暫繳-62欄 (d) - 自動從 provisional_payment 填入
+    provisional_col62 = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='暫繳(62欄)',
+        help_text='自動從暫繳金額填入，唯讀'
+    )
+    
+    # 扣繳-63欄 (e)
+    withholding_col63 = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='扣繳(63欄)',
+        help_text='輸入整數金額'
+    )
+    
+    # 房地合一-65欄 (f)
+    land_building_col65 = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='房地合一(65欄)',
+        help_text='輸入整數金額'
+    )
+    
+    # 其他 (g)
+    other_amount = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='其他',
+        help_text='輸入整數金額'
+    )
+    
+    # 補繳金額(64)應退(65) (h) - 自動計算：c - d - e + f - g
+    refund_or_payment = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='補繳金額(64)應退(65)',
+        help_text='自動計算：應納稅額 - 暫繳 - 扣繳 + 房地合一 - 其他'
+    )
+    
+    # 未分加徵稅額 (i)
+    unallocated_surtax = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='未分加徵稅額',
+        help_text='輸入整數金額'
+    )
+    
+    # 抵完後應補(退) (j) - 自動計算
+    final_refund_or_payment = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='抵完後應補(退)',
+        help_text='自動計算'
+    )
+    
+    # 總計稅款 (k) - 自動計算
+    total_tax = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='總計稅款',
+        help_text='自動計算'
+    )
+    
+    # ==================== 文件網址 ====================
+    declaration_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='申報書網址',
+        help_text='輸入申報書的完整網址'
+    )
+    
+    payment_slip_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='繳款書網址',
+        help_text='輸入繳款書的完整網址'
+    )
+    
+    # ==================== 檢查清單 (Check List) ====================
+    INCOME_401_CHOICES = [
+        ('reconciled', '調節相符申報'),
+        ('zero', '申報0'),
+        ('not_applicable', '無此情形'),
+    ]
+    
+    income_401_reconciliation = models.CharField(
+        max_length=20,
+        choices=INCOME_401_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='收入與401調節相符'
+    )
+    
+    INCOME_EXPENSE_CHOICES = [
+        ('confirmed', '確認無誤'),
+        ('no_tax_expense', '無所得稅費用'),
+    ]
+    
+    income_expense_match = models.CharField(
+        max_length=20,
+        choices=INCOME_EXPENSE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='所得費用相符'
+    )
+    
+    bad_debt_expense = models.CharField(
+        max_length=20,
+        choices=[('confirmed', '確認未超限')],
+        blank=True,
+        null=True,
+        verbose_name='壞帳費用'
+    )
+    
+    entertainment_expense = models.CharField(
+        max_length=20,
+        choices=[('confirmed', '確認未超限')],
+        blank=True,
+        null=True,
+        verbose_name='交際費'
+    )
+    
+    employee_welfare = models.CharField(
+        max_length=20,
+        choices=[('confirmed', '確認未超限')],
+        blank=True,
+        null=True,
+        verbose_name='職工福利'
+    )
+    
+    UNDISTRIBUTED_EARNINGS_CHOICES = [
+        ('no_earnings', '沒有未分配盈餘'),
+        ('surtax_correct', '加徵稅額計算無誤'),
+    ]
+    
+    undistributed_earnings_surtax = models.CharField(
+        max_length=20,
+        choices=UNDISTRIBUTED_EARNINGS_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='未分配盈餘加徵'
+    )
+    
+    COST_STATEMENT_CHOICES = [
+        ('matched', '成本表相符'),
+        ('not_prepared', '無編制成本表'),
+    ]
+    
+    cost_statement = models.CharField(
+        max_length=20,
+        choices=COST_STATEMENT_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='成本表'
+    )
+    
+    PROVISIONAL_WITHHOLDING_CHOICES = [
+        ('deducted', '已扣除'),
+        ('not_applicable', '無暫繳或扣繳'),
+    ]
+    
+    provisional_withholding_deduction = models.CharField(
+        max_length=20,
+        choices=PROVISIONAL_WITHHOLDING_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='暫繳及扣繳要扣除'
+    )
+    
+    LAND_TRANSACTION_CHOICES = [
+        ('c4_filled', 'C4表已填'),
+        ('no_transaction', '無土地交易'),
+    ]
+    
+    land_transaction = models.CharField(
+        max_length=20,
+        choices=LAND_TRANSACTION_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='土地交易'
+    )
+    
+    # ==================== 系統欄位 ====================
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='建立時間'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='更新時間'
+    )
+    
+    class Meta:
+        db_table = 'income_tax_record'
+        verbose_name = '所得稅申報記錄'
+        verbose_name_plural = '所得稅申報記錄'
+        ordering = ['-filing_year', '-created_at']
+        # 確保同一客戶的同一年度只有一筆記錄
+        unique_together = [['customer', 'filing_year']]
+    
+    def __str__(self):
+        return f"{self.customer.company_name} - {self.filing_year}年所得稅"
+    
+    def save(self, *args, **kwargs):
+        """儲存前自動同步暫繳金額到 provisional_col62"""
+        if self.provisional_payment is not None:
+            self.provisional_col62 = self.provisional_payment
+        super().save(*args, **kwargs)
+
+
+# ==================== 下載資料管理模型 ====================
+
+class DownloadData(models.Model):
+    """下載資料管理"""
+    
+    # ==================== 選項定義 ====================
+    PAYMENT_METHOD_CHOICES = [
+        ('customer', '客戶自己繳'),
+        ('office', '事務所代繳'),
+        ('no_reply', '還沒回覆'),
+    ]
+    
+    SOURCE_CHOICES = [
+        ('google', 'Google'),
+        ('manual', '自行輸入'),
+        ('na', 'NA'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('current', '當期'),
+        ('previous', '上期'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('vat', '營業稅'),
+        ('income_tax', '所得稅'),
+        ('provisional', '暫繳'),
+    ]
+    
+    # ==================== 資料欄位 ====================
+    file_number = models.CharField(
+        max_length=50,
+        verbose_name='檔案編號',
+        help_text='資料檔案編號'
+    )
+    
+    year = models.IntegerField(
+        verbose_name='年度',
+        help_text='申報年度'
+    )
+    
+    period = models.CharField(
+        max_length=20,
+        verbose_name='期別',
+        help_text='申報期別'
+    )
+    
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='種類',
+        help_text='資料種類'
+    )
+    
+    company_id = models.CharField(
+        max_length=8,
+        verbose_name='統一編號',
+        help_text='公司統一編號'
+    )
+    
+    company_name = models.CharField(
+        max_length=200,
+        verbose_name='公司名稱'
+    )
+    
+    email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name='Email'
+    )
+    
+    invoice_received_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='收到發票日期'
+    )
+    
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='繳稅方式'
+    )
+    
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='來源'
+    )
+    
+    reply_time = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='回覆時間'
+    )
+    
+    declaration_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='申報書網址'
+    )
+    
+    payment_slip_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='繳款書網址'
+    )
+    
+    tax_deadline = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='繳稅截止日'
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='current',
+        verbose_name='狀態'
+    )
+    
+    # ==================== 系統欄位 ====================
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='建立時間'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='更新時間'
+    )
+    
+    class Meta:
+        db_table = 'download_data'
+        verbose_name = '下載資料'
+        verbose_name_plural = '下載資料'
+        ordering = ['-year', '-period', '-created_at']
+    
+    def __str__(self):
+        return f"{self.file_number} - {self.company_name} ({self.year}年{self.period})"

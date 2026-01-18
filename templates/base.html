@@ -167,6 +167,30 @@
                             <span>國稅局查帳</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{% url 'booking:vat_record_list' %}"
+                            class="sidebar-link sidebar-sublink {% if '/vat/' in request.path %}active{% endif %}"
+                            title="營業稅申報">
+                            <i class="bi bi-receipt"></i>
+                            <span>營業稅申報</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'booking:income_tax_list' %}"
+                            class="sidebar-link sidebar-sublink {% if '/income-tax/' in request.path %}active{% endif %}"
+                            title="所得稅申報">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <span>所得稅申報</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'booking:download_data_list' %}"
+                            class="sidebar-link sidebar-sublink {% if '/download-data/' in request.path %}active{% endif %}"
+                            title="下載資料">
+                            <i class="bi bi-download"></i>
+                            <span>下載資料</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
         </ul>

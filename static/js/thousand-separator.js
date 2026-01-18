@@ -147,6 +147,32 @@ const ThousandSeparator = {
         if (element.value) {
             element.value = ThousandSeparator.formatNumber(element.value);
         }
+    },
+
+    /**
+     * 準備表單提交：移除所有千分位符號
+     * 應在表單提交前調用此方法
+     * @param {HTMLFormElement|string} formSelector - 表單元素或選擇器
+     */
+    prepareFormSubmit: function (formSelector) {
+        const form = typeof formSelector === 'string' ?
+            document.querySelector(formSelector) : formSelector;
+
+        if (!form) {
+            console.warn('ThousandSeparator: 找不到表單元素');
+            return;
+        }
+
+        // 在表單提交前移除所有千分位符號
+        form.addEventListener('submit', function (e) {
+            const amountFields = form.querySelectorAll('.amount-field');
+            amountFields.forEach(field => {
+                if (field.value) {
+                    // 移除所有逗號，保留純數字
+                    field.value = ThousandSeparator.parseNumber(field.value);
+                }
+            });
+        });
     }
 };
 

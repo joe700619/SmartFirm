@@ -1,14 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}記帳客戶列表 - SmartFirm{% endblock %}
+{% block title %}所得稅申報記錄 - SmartFirm{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>記帳客戶資料</h2>
-        <a href="{% url 'booking:customer_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> 新增客戶
-        </a>
+        <h2>所得稅申報記錄</h2>
     </div>
 
     {% if messages %}
@@ -20,59 +17,16 @@
     {% endfor %}
     {% endif %}
 
-    <!-- 篩選表單 -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-funnel"></i> 篩選客戶</h5>
-        </div>
-        <div class="card-body">
-            <form method="get" action="{% url 'booking:customer_list' %}">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label for="{{ filter_form.company_name.id_for_label }}" class="form-label">公司名稱</label>
-                        {{ filter_form.company_name }}
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="{{ filter_form.company_id.id_for_label }}" class="form-label">統一編號</label>
-                        {{ filter_form.company_id }}
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label for="{{ filter_form.contact_person.id_for_label }}" class="form-label">聯絡人</label>
-                        {{ filter_form.contact_person }}
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label for="{{ filter_form.charge_status.id_for_label }}" class="form-label">收費狀態</label>
-                        {{ filter_form.charge_status }}
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label for="{{ filter_form.undertaking_status.id_for_label }}" class="form-label">承接狀態</label>
-                        {{ filter_form.undertaking_status }}
-                    </div>
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search"></i> 篩選
-                    </button>
-                    <a href="{% url 'booking:customer_list' %}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> 清除
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-
     {% if customers %}
     <div class="table-responsive">
-        <table class="table table-striped table-hover" id="customerTable">
+        <table class="table table-striped table-hover" id="incomeTaxTable">
             <thead class="table-secondary">
                 <tr>
                     <th>統一編號</th>
                     <th>公司名稱</th>
-                    <th>聯絡人</th>
-                    <th>電話</th>
-                    <th>收費狀態</th>
+                    <th>記帳助理</th>
+                    <th>營業人類型</th>
                     <th>承接狀態</th>
-                    <th>行業名稱</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -81,15 +35,8 @@
                 <tr>
                     <td>{{ customer.company_id }}</td>
                     <td>{{ customer.company_name }}</td>
-                    <td>{{ customer.contact_person }}</td>
-                    <td>{{ customer.phone|default:"—" }}</td>
-                    <td>
-                        {% if customer.charge_status == 'charging' %}
-                        <span class="badge bg-success">{{ customer.get_charge_status_display }}</span>
-                        {% else %}
-                        <span class="badge bg-secondary">{{ customer.get_charge_status_display }}</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ customer.bookkeeping_assistant|default:"—" }}</td>
+                    <td>{{ customer.get_business_type_display }}</td>
                     <td>
                         {% if customer.undertaking_status == 'undertaking' %}
                         <span class="badge bg-primary">{{ customer.get_undertaking_status_display }}</span>
@@ -99,13 +46,10 @@
                         <span class="badge bg-danger">{{ customer.get_undertaking_status_display }}</span>
                         {% endif %}
                     </td>
-                    <td>{{ customer.industry_name|default:"—" }}</td>
                     <td>
-                        <a href="{% url 'booking:customer_update' customer.pk %}" class="btn btn-sm btn-warning me-1">
-                            編輯
-                        </a>
-                        <a href="{% url 'booking:customer_delete' customer.pk %}" class="btn btn-sm btn-danger">
-                            刪除
+                        <a href="{% url 'booking:income_tax_edit_by_customer' customer.pk %}"
+                            class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> 編輯
                         </a>
                     </td>
                 </tr>
@@ -116,7 +60,7 @@
 
     {% else %}
     <div class="alert alert-info" role="alert">
-        <i class="bi bi-info-circle"></i> 目前尚無客戶資料，請點擊「新增客戶」按鈕建立第一筆資料。
+        <i class="bi bi-info-circle"></i> 目前尚無客戶資料。
     </div>
     {% endif %}
 </div>
@@ -136,7 +80,7 @@
 
 <script>
     $(document).ready(function () {
-        $('#customerTable').DataTable({
+        $('#incomeTaxTable').DataTable({
             // 中文化
             language: {
                 "sProcessing": "處理中...",
@@ -164,7 +108,7 @@
                 {
                     // 操作欄位不可排序
                     orderable: false,
-                    targets: [7]
+                    targets: [5]
                 }
             ],
             // Bootstrap 5 樣式

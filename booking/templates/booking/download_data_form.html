@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ action }}</h2>
+        <a href="{% url 'booking:download_data_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> 返回列表
+        </a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> 基本資訊</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.file_number.id_for_label }}" class="form-label">檔案編號</label>
+                        {{ form.file_number }}
+                        {% if form.file_number.errors %}
+                        <div class="text-danger small">{{ form.file_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.year.id_for_label }}" class="form-label">年度 <span
+                                class="text-danger">*</span></label>
+                        {{ form.year }}
+                        {% if form.year.errors %}
+                        <div class="text-danger small">{{ form.year.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.period.id_for_label }}" class="form-label">期別</label>
+                        {{ form.period }}
+                        {% if form.period.errors %}
+                        <div class="text-danger small">{{ form.period.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">種類</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="text-danger small">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">狀態</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                        <div class="text-danger small">{{ form.status.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-building"></i> 公司資訊</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.company_id.id_for_label }}" class="form-label">統一編號 <span
+                                class="text-danger">*</span></label>
+                        {{ form.company_id }}
+                        {% if form.company_id.errors %}
+                        <div class="text-danger small">{{ form.company_id.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label for="{{ form.company_name.id_for_label }}" class="form-label">公司名稱 <span
+                                class="text-danger">*</span></label>
+                        {{ form.company_name }}
+                        {% if form.company_name.errors %}
+                        <div class="text-danger small">{{ form.company_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="text-danger small">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> 日期資訊</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.invoice_received_date.id_for_label }}" class="form-label">收到發票日期</label>
+                        {{ form.invoice_received_date }}
+                        {% if form.invoice_received_date.errors %}
+                        <div class="text-danger small">{{ form.invoice_received_date.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.reply_time.id_for_label }}" class="form-label">回覆時間</label>
+                        {{ form.reply_time }}
+                        {% if form.reply_time.errors %}
+                        <div class="text-danger small">{{ form.reply_time.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tax_deadline.id_for_label }}" class="form-label">繳稅截止日</label>
+                        {{ form.tax_deadline }}
+                        {% if form.tax_deadline.errors %}
+                        <div class="text-danger small">{{ form.tax_deadline.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> 其他資訊</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.payment_method.id_for_label }}" class="form-label">繳稅完成否</label>
+                        {{ form.payment_method }}
+                        {% if form.payment_method.errors %}
+                        <div class="text-danger small">{{ form.payment_method.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.source.id_for_label }}" class="form-label">來源</label>
+                        {{ form.source }}
+                        {% if form.source.errors %}
+                        <div class="text-danger small">{{ form.source.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.declaration_url.id_for_label }}" class="form-label">申報書網址</label>
+                        {{ form.declaration_url }}
+                        {% if form.declaration_url.errors %}
+                        <div class="text-danger small">{{ form.declaration_url.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.payment_slip_url.id_for_label }}" class="form-label">繳款書網址</label>
+                        {{ form.payment_slip_url }}
+                        {% if form.payment_slip_url.errors %}
+                        <div class="text-danger small">{{ form.payment_slip_url.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mb-4">
+            <a href="{% url 'booking:download_data_list' %}" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> 取消
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> 儲存
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

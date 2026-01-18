@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ action }}</h2>
+        <a href="{% url 'booking:vat_record_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> 返回列表
+        </a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- 基本資料區塊（唯讀顯示） -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-building"></i> 基本資料（唯讀）</h5>
+            </div>
+            <div class="card-body">
+                {% if is_edit %}
+                <!-- 編輯模式：顯示客戶基本資料，客戶選擇器隱藏 -->
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">統一編號</label>
+                        <p class="form-control-plaintext">{{ customer.company_id }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">公司名稱</label>
+                        <p class="form-control-plaintext">{{ customer.company_name }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <p class="form-control-plaintext">{{ customer.email|default:"—" }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">聯絡人</label>
+                        <p class="form-control-plaintext">{{ customer.contact_person|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Line ID</label>
+                        <p class="form-control-plaintext">{{ customer.line_id|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">記帳助理</label>
+                        <p class="form-control-plaintext">{{ customer.bookkeeping_assistant|default:"—" }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">營業人類型</label>
+                        <p class="form-control-plaintext">{{ customer.get_business_type_display }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">繳稅方式</label>
+                        <p class="form-control-plaintext">{{ customer.get_tax_payment_display|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">通知方式</label>
+                        <p class="form-control-plaintext">{{ customer.get_notification_method_display|default:"—" }}</p>
+                    </div>
+                </div>
+                <!-- 隱藏欄位保留客戶關聯 -->
+                <input type="hidden" name="customer" value="{{ customer.pk }}">
+                {% else %}
+                <!-- 新增模式：顯示客戶選擇器 -->
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.customer.id_for_label }}" class="form-label">選擇客戶 <span
+                                class="text-danger">*</span></label>
+                        {{ form.customer }}
+                        {% if form.customer.errors %}
+                        <div class="text-danger small">{{ form.customer.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">請選擇客戶後，基本資料會自動帶入</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 本期資料區塊（可編輯） -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> 本期資料</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.filing_year.id_for_label }}" class="form-label">申報年度 <span
+                                class="text-danger">*</span></label>
+                        {{ form.filing_year }}
+                        {% if form.filing_year.errors %}
+                        <div class="text-danger small">{{ form.filing_year.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.filing_period.id_for_label }}" class="form-label">申報期別 <span
+                                class="text-danger">*</span></label>
+                        {{ form.filing_period }}
+                        {% if form.filing_period.errors %}
+                        <div class="text-danger small">{{ form.filing_period.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tax_deadline.id_for_label }}" class="form-label">繳稅截止日</label>
+                        {{ form.tax_deadline }}
+                        {% if form.tax_deadline.errors %}
+                        <div class="text-danger small">{{ form.tax_deadline.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tax_payable.id_for_label }}" class="form-label">是否繳稅</label>
+                        {{ form.tax_payable }}
+                        {% if form.tax_payable.errors %}
+                        <div class="text-danger small">{{ form.tax_payable.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tax_payment_completed.id_for_label }}" class="form-label">繳稅完成否</label>
+                        {{ form.tax_payment_completed }}
+                        {% if form.tax_payment_completed.errors %}
+                        <div class="text-danger small">{{ form.tax_payment_completed.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.invoice_received_date.id_for_label }}" class="form-label">收到發票日期</label>
+                        {{ form.invoice_received_date }}
+                        {% if form.invoice_received_date.errors %}
+                        <div class="text-danger small">{{ form.invoice_received_date.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.source.id_for_label }}" class="form-label">來源</label>
+                        {{ form.source }}
+                        {% if form.source.errors %}
+                        <div class="text-danger small">{{ form.source.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.reply_time.id_for_label }}" class="form-label">回覆時間</label>
+                        {{ form.reply_time }}
+                        {% if form.reply_time.errors %}
+                        <div class="text-danger small">{{ form.reply_time.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.completion_status.id_for_label }}" class="form-label">完成狀態</label>
+                        {{ form.completion_status }}
+                        {% if form.completion_status.errors %}
+                        <div class="text-danger small">{{ form.completion_status.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 稅額資料 -->
+                <div class="row">
+                    <div class="col-md-12 mb-2">
+                        <hr>
+                        <h6 class="text-primary"><i class="bi bi-calculator"></i> 稅額資料</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.sales_amount.id_for_label }}" class="form-label">銷項金額</label>
+                        {{ form.sales_amount }}
+                        {% if form.sales_amount.errors %}
+                        <div class="text-danger small">{{ form.sales_amount.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.purchase_amount.id_for_label }}" class="form-label">進項金額</label>
+                        {{ form.purchase_amount }}
+                        {% if form.purchase_amount.errors %}
+                        <div class="text-danger small">{{ form.purchase_amount.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.credit_carryforward.id_for_label }}" class="form-label">留底抵稅額</label>
+                        {{ form.credit_carryforward }}
+                        {% if form.credit_carryforward.errors %}
+                        <div class="text-danger small">{{ form.credit_carryforward.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tax_payable_amount.id_for_label }}" class="form-label">應納稅額</label>
+                        {{ form.tax_payable_amount }}
+                        {% if form.tax_payable_amount.errors %}
+                        <div class="text-danger small">{{ form.tax_payable_amount.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tax_refund_amount.id_for_label }}" class="form-label">應退稅額</label>
+                        {{ form.tax_refund_amount }}
+                        {% if form.tax_refund_amount.errors %}
+                        <div class="text-danger small">{{ form.tax_refund_amount.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.declaration_url.id_for_label }}" class="form-label">申報書網址</label>
+                        {{ form.declaration_url }}
+                        {% if form.declaration_url.errors %}
+                        <div class="text-danger small">{{ form.declaration_url.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.payment_slip_url.id_for_label }}" class="form-label">繳款書網址</label>
+                        {{ form.payment_slip_url }}
+                        {% if form.payment_slip_url.errors %}
+                        <div class="text-danger small">{{ form.payment_slip_url.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提交按鈕 -->
+        <div class="d-flex gap-2 justify-content-end mb-4">
+            <a href="{% url 'booking:vat_record_list' %}" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> 取消
+            </a>
+            {% if vat_record and vat_record.pk %}
+            <button type="button" class="btn btn-info" id="notifyCustomerBtn">
+                <i class="bi bi-send"></i> 通知客戶
+            </button>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> 儲存
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/thousand-separator.js' %}"></script>
+<script>
+    // 當頁面載入完成後初始化千分位格式化
+    document.addEventListener('DOMContentLoaded', function () {
+        // 為所有金額欄位初始化千分位格式化（僅整數）
+        ThousandSeparator.init('.amount-field', { maxDecimals: 0 });
+
+        // 準備表單提交：移除千分位符號
+        const form = document.querySelector('form');
+        if (form) {
+            ThousandSeparator.prepareFormSubmit(form);
+        }
+
+        // 通知客戶功能
+        {% if vat_record and vat_record.pk %}
+        const notifyBtn = document.getElementById('notifyCustomerBtn');
+        if (notifyBtn) {
+            notifyBtn.addEventListener('click', function () {
+                if (!confirm('確定要通知客戶嗎？此操作將把資料傳送到下載資料中。')) {
+                    return;
+                }
+
+                // 禁用按鈕防止重複點擊
+                notifyBtn.disabled = true;
+                notifyBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 傳送中...';
+
+                // 發送 AJAX 請求
+                fetch('{% url "booking:notify_customer" "vat" vat_record.pk %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            // 恢復按鈕
+                            notifyBtn.disabled = false;
+                            notifyBtn.innerHTML = '<i class="bi bi-send"></i> 通知客戶';
+                        } else {
+                            alert('錯誤：' + data.message);
+                            notifyBtn.disabled = false;
+                            notifyBtn.innerHTML = '<i class="bi bi-send"></i> 通知客戶';
+                        }
+                    })
+                    .catch(error => {
+                        alert('系統錯誤：' + error);
+                        notifyBtn.disabled = false;
+                        notifyBtn.innerHTML = '<i class="bi bi-send"></i> 通知客戶';
+                    });
+            });
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

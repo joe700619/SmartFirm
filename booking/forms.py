@@ -1,5 +1,5 @@
 from django import forms
-from .models import BookingCustomer, TaxAuditRecord, TaxAuditHistory
+from .models import BookingCustomer, TaxAuditRecord, TaxAuditHistory, VATRecord, IncomeTaxRecord, DownloadData
 from admin_module.models import BasicInformation
 
 
@@ -361,3 +361,278 @@ class TaxAuditHistoryForm(forms.ModelForm):
             }),
         }
 
+
+class VATRecordForm(forms.ModelForm):
+    """營業稅申報記錄表單"""
+    
+    class Meta:
+        model = VATRecord
+        fields = [
+            'customer',
+            'filing_year', 'filing_period', 'tax_payable', 'tax_deadline',
+            'invoice_received_date', 'tax_payment_completed', 'source',
+            'reply_time', 'declaration_url', 'payment_slip_url',
+            # 新增稅額欄位
+            'sales_amount', 'purchase_amount', 'credit_carryforward',
+            'tax_payable_amount', 'tax_refund_amount',
+            # 完成狀態
+            'completion_status'
+        ]
+        widgets = {
+            'customer': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_vat_customer'
+            }),
+            'filing_year': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '例如: 113',
+                'maxlength': '4'
+            }),
+            'filing_period': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'tax_payable': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'tax_deadline': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }, format='%Y-%m-%d'),
+            'invoice_received_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }, format='%Y-%m-%d'),
+            'tax_payment_completed': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'source': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'reply_time': forms.DateTimeInput(attrs={
+                'class': 'form-control',
+                'type': 'datetime-local'
+            }, format='%Y-%m-%dT%H:%M'),
+            'declaration_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://'
+            }),
+            'payment_slip_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://'
+            }),
+            # 稅額欄位 - 使用 TextInput 以支援千分位逗號
+            'sales_amount': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'purchase_amount': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'credit_carryforward': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'tax_payable_amount': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'tax_refund_amount': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            # 完成狀態
+            'completion_status': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+        }
+
+
+class VATRecordFilterForm(forms.Form):
+    """營業稅申報記錄篩選表單"""
+    
+    bookkeeping_assistant = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '記帳助理'
+        })
+    )
+    company_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '公司名稱'
+        })
+    )
+    company_id = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '統一編號'
+        })
+    )
+    undertaking_status = forms.ChoiceField(
+        required=False,
+        choices=[('', '全部')] + BookingCustomer.UNDERTAKING_STATUS_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )
+    business_type = forms.ChoiceField(
+        required=False,
+        choices=[('', '全部')] + BookingCustomer.BUSINESS_TYPE_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )
+    tax_payment = forms.ChoiceField(
+        required=False,
+        choices=[('', '全部')] + BookingCustomer.TAX_PAYMENT_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )
+
+
+class IncomeTaxRecordForm(forms.ModelForm):
+    """所得稅申報記錄表單"""
+    
+    class Meta:
+        model = IncomeTaxRecord
+        fields = [
+            'customer', 'filing_year', 'important_notes',
+            'provisional_payment', 'dividend_distribution',
+            'receipt_number', 'filing_type',
+            'tax_payable_col60', 'provisional_col62', 'withholding_col63',
+            'land_building_col65', 'other_amount',
+            'refund_or_payment', 'unallocated_surtax',
+            'final_refund_or_payment', 'total_tax',
+            'declaration_url', 'payment_slip_url',
+            # Checklist fields
+            'income_401_reconciliation', 'income_expense_match',
+            'bad_debt_expense', 'entertainment_expense', 'employee_welfare',
+            'undistributed_earnings_surtax', 'cost_statement',
+            'provisional_withholding_deduction', 'land_transaction'
+        ]
+        widgets = {
+            'customer': forms.Select(attrs={'class': 'form-select'}),
+            'filing_year': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '113'}),
+            'important_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'provisional_payment': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'inputmode': 'numeric',
+                'id': 'id_provisional_payment'
+            }),
+            'dividend_distribution': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'receipt_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'filing_type': forms.Select(attrs={'class': 'form-select'}),
+            'tax_payable_col60': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'provisional_col62': forms.TextInput(attrs={
+                'class': 'form-control amount-field',
+                'placeholder': '0',
+                'readonly': 'readonly',
+                'inputmode': 'numeric'
+            }),
+            'withholding_col63': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'land_building_col65': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'other_amount': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'refund_or_payment': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-result',
+                'placeholder': '0',
+                'readonly': 'readonly',
+                'inputmode': 'numeric'
+            }),
+            'unallocated_surtax': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-field',
+                'placeholder': '0',
+                'inputmode': 'numeric'
+            }),
+            'final_refund_or_payment': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-result',
+                'placeholder': '0',
+                'readonly': 'readonly',
+                'inputmode': 'numeric'
+            }),
+            'total_tax': forms.TextInput(attrs={
+                'class': 'form-control amount-field calc-result',
+                'placeholder': '0',
+                'readonly': 'readonly',
+                'inputmode': 'numeric'
+            }),
+            'declaration_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://example.com/declaration.pdf'
+            }),
+            'payment_slip_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://example.com/payment_slip.pdf'
+            }),
+            # Checklist fields
+            'income_401_reconciliation': forms.Select(attrs={'class': 'form-select'}),
+            'income_expense_match': forms.Select(attrs={'class': 'form-select'}),
+            'bad_debt_expense': forms.Select(attrs={'class': 'form-select'}),
+            'entertainment_expense': forms.Select(attrs={'class': 'form-select'}),
+            'employee_welfare': forms.Select(attrs={'class': 'form-select'}),
+            'undistributed_earnings_surtax': forms.Select(attrs={'class': 'form-select'}),
+            'cost_statement': forms.Select(attrs={'class': 'form-select'}),
+            'provisional_withholding_deduction': forms.Select(attrs={'class': 'form-select'}),
+            'land_transaction': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+
+class DownloadDataForm(forms.ModelForm):
+    """下載資料表單"""
+    
+    class Meta:
+        model = DownloadData
+        fields = [
+            'file_number', 'year', 'period', 'category',
+            'company_id', 'company_name', 'email',
+            'invoice_received_date', 'payment_method', 'source',
+            'reply_time', 'declaration_url', 'payment_slip_url',
+            'tax_deadline', 'status'
+        ]
+        widgets = {
+            'file_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'year': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '113'}),
+            'period': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '01-02'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'company_id': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '8'}),
+            'company_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'invoice_received_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+            'payment_method': forms.Select(attrs={'class': 'form-select'}),
+            'source': forms.Select(attrs={'class': 'form-select'}),
+            'reply_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'declaration_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'payment_slip_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'tax_deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+        }

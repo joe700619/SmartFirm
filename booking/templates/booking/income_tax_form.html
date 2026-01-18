@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ action }}</h2>
+        <a href="{% url 'booking:income_tax_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> 返回列表
+        </a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- 基本資料區塊（唯讀顯示） -->
+        <div class="card mb-4">
+            <div class="card-header text-dark">
+                <h5 class="mb-0"><i class="bi bi-building"></i> 基本資料（唯讀）</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">統一編號</label>
+                        <p class="form-control-plaintext">{{ customer.company_id }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">公司名稱</label>
+                        <p class="form-control-plaintext">{{ customer.company_name }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <p class="form-control-plaintext">{{ customer.email|default:"—" }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">聯絡人</label>
+                        <p class="form-control-plaintext">{{ customer.contact_person|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Line ID</label>
+                        <p class="form-control-plaintext">{{ customer.line_id|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">記帳助理</label>
+                        <p class="form-control-plaintext">{{ customer.bookkeeping_assistant|default:"—" }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">營業人類型</label>
+                        <p class="form-control-plaintext">{{ customer.get_business_type_display }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">繳稅方式</label>
+                        <p class="form-control-plaintext">{{ customer.get_tax_payment_display|default:"—" }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">通知方式</label>
+                        <p class="form-control-plaintext">{{ customer.get_notification_method_display|default:"—" }}</p>
+                    </div>
+                </div>
+                <!-- 隱藏欄位保留客戶關聯 -->
+                <input type="hidden" name="customer" value="{{ customer.pk }}">
+            </div>
+        </div>
+
+        <!-- 重要提醒事項區塊 -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> 重要提醒事項</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.important_notes.id_for_label }}" class="form-label">提醒內容</label>
+                        {{ form.important_notes }}
+                        {% if form.important_notes.errors %}
+                        <div class="text-danger small">{{ form.important_notes.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">輸入需要特別注意的事項</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 本期資料區塊（可編輯） -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> 本期資料</h5>
+            </div>
+            <div class="card-body">
+                <!-- 申報年度 -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="{{ form.filing_year.id_for_label }}" class="form-label">申報年度 <span
+                                class="text-danger">*</span></label>
+                        {{ form.filing_year }}
+                        {% if form.filing_year.errors %}
+                        <div class="text-danger small">{{ form.filing_year.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- (1) 暫繳區塊 -->
+                <h6 class="text-success mb-3"><i class="bi bi-cash-stack"></i> (1) 暫繳及股利分配</h6>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="{{ form.provisional_payment.id_for_label }}" class="form-label">暫繳金額</label>
+                        {{ form.provisional_payment }}
+                        {% if form.provisional_payment.errors %}
+                        <div class="text-danger small">{{ form.provisional_payment.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">此金額會自動填入「暫繳-62欄」</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.dividend_distribution.id_for_label }}" class="form-label">股利分配金額</label>
+                        {{ form.dividend_distribution }}
+                        {% if form.dividend_distribution.errors %}
+                        <div class="text-danger small">{{ form.dividend_distribution.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- (3) 本稅區塊 -->
+                <h6 class="text-success mb-3"><i class="bi bi-receipt"></i> (3) 本稅</h6>
+
+                <!-- 收件編號 & 申報類別 -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.receipt_number.id_for_label }}" class="form-label">收件編號</label>
+                        {{ form.receipt_number }}
+                        {% if form.receipt_number.errors %}
+                        <div class="text-danger small">{{ form.receipt_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.filing_type.id_for_label }}" class="form-label">申報類別</label>
+                        {{ form.filing_type }}
+                        {% if form.filing_type.errors %}
+                        <div class="text-danger small">{{ form.filing_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- c~g 可輸入欄位 -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.tax_payable_col60.id_for_label }}" class="form-label">c. 應納稅額(60欄)</label>
+                        {{ form.tax_payable_col60 }}
+                        {% if form.tax_payable_col60.errors %}
+                        <div class="text-danger small">{{ form.tax_payable_col60.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.provisional_col62.id_for_label }}" class="form-label">d. 暫繳(62欄) <span
+                                class="badge bg-secondary">唯讀</span></label>
+                        {{ form.provisional_col62 }}
+                        {% if form.provisional_col62.errors %}
+                        <div class="text-danger small">{{ form.provisional_col62.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">自動從「暫繳金額」填入</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.withholding_col63.id_for_label }}" class="form-label">e. 扣繳(63欄)</label>
+                        {{ form.withholding_col63 }}
+                        {% if form.withholding_col63.errors %}
+                        <div class="text-danger small">{{ form.withholding_col63.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.land_building_col65.id_for_label }}" class="form-label">f. 房地合一(65欄)</label>
+                        {{ form.land_building_col65 }}
+                        {% if form.land_building_col65.errors %}
+                        <div class="text-danger small">{{ form.land_building_col65.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.other_amount.id_for_label }}" class="form-label">g. 其他</label>
+                        {{ form.other_amount }}
+                        {% if form.other_amount.errors %}
+                        <div class="text-danger small">{{ form.other_amount.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- h~k 自動計算欄位 -->
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 以下欄位會自動計算（目前手動輸入，未來版本將加入自動計算功能）
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.refund_or_payment.id_for_label }}" class="form-label">h. 補繳金額(64)應退(65)
+                            <span class="badge bg-secondary">自動計算</span></label>
+                        {{ form.refund_or_payment }}
+                        {% if form.refund_or_payment.errors %}
+                        <div class="text-danger small">{{ form.refund_or_payment.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">公式: c - d - e + f - g</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.unallocated_surtax.id_for_label }}" class="form-label">i. 未分加徵稅額</label>
+                        {{ form.unallocated_surtax }}
+                        {% if form.unallocated_surtax.errors %}
+                        <div class="text-danger small">{{ form.unallocated_surtax.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.final_refund_or_payment.id_for_label }}" class="form-label">j. 抵完後應補(退)
+                            <span class="badge bg-secondary">自動計算</span></label>
+                        {{ form.final_refund_or_payment }}
+                        {% if form.final_refund_or_payment.errors %}
+                        <div class="text-danger small">{{ form.final_refund_or_payment.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">公式: if(h<0, h+i, 0)</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.total_tax.id_for_label }}" class="form-label">k. 總計稅款 <span
+                                    class="badge bg-secondary">自動計算</span></label>
+                            {{ form.total_tax }}
+                            {% if form.total_tax.errors %}
+                            <div class="text-danger small">{{ form.total_tax.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">公式: 根據 h, i, j 的值計算</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件網址區塊 -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-link-45deg"></i> 文件網址</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.declaration_url.id_for_label }}" class="form-label">申報書網址</label>
+                            {{ form.declaration_url }}
+                            {% if form.declaration_url.errors %}
+                            <div class="text-danger small">{{ form.declaration_url.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">輸入申報書的完整網址</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.payment_slip_url.id_for_label }}" class="form-label">繳款書網址</label>
+                            {{ form.payment_slip_url }}
+                            {% if form.payment_slip_url.errors %}
+                            <div class="text-danger small">{{ form.payment_slip_url.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">輸入繳款書的完整網址</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 檢查清單區塊 -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-check2-square"></i> 檢查清單 (Check List)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.income_401_reconciliation.id_for_label }}"
+                                class="form-label">收入與401調節相符</label>
+                            {{ form.income_401_reconciliation }}
+                            {% if form.income_401_reconciliation.errors %}
+                            <div class="text-danger small">{{ form.income_401_reconciliation.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.income_expense_match.id_for_label }}" class="form-label">所得費用相符</label>
+                            {{ form.income_expense_match }}
+                            {% if form.income_expense_match.errors %}
+                            <div class="text-danger small">{{ form.income_expense_match.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.bad_debt_expense.id_for_label }}" class="form-label">壞帳費用</label>
+                            {{ form.bad_debt_expense }}
+                            {% if form.bad_debt_expense.errors %}
+                            <div class="text-danger small">{{ form.bad_debt_expense.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.entertainment_expense.id_for_label }}" class="form-label">交際費</label>
+                            {{ form.entertainment_expense }}
+                            {% if form.entertainment_expense.errors %}
+                            <div class="text-danger small">{{ form.entertainment_expense.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.employee_welfare.id_for_label }}" class="form-label">職工福利</label>
+                            {{ form.employee_welfare }}
+                            {% if form.employee_welfare.errors %}
+                            <div class="text-danger small">{{ form.employee_welfare.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.undistributed_earnings_surtax.id_for_label }}"
+                                class="form-label">未分配盈餘加徵</label>
+                            {{ form.undistributed_earnings_surtax }}
+                            {% if form.undistributed_earnings_surtax.errors %}
+                            <div class="text-danger small">{{ form.undistributed_earnings_surtax.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.cost_statement.id_for_label }}" class="form-label">成本表</label>
+                            {{ form.cost_statement }}
+                            {% if form.cost_statement.errors %}
+                            <div class="text-danger small">{{ form.cost_statement.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.provisional_withholding_deduction.id_for_label }}"
+                                class="form-label">暫繳及扣繳要扣除</label>
+                            {{ form.provisional_withholding_deduction }}
+                            {% if form.provisional_withholding_deduction.errors %}
+                            <div class="text-danger small">{{ form.provisional_withholding_deduction.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.land_transaction.id_for_label }}" class="form-label">土地交易</label>
+                            {{ form.land_transaction }}
+                            {% if form.land_transaction.errors %}
+                            <div class="text-danger small">{{ form.land_transaction.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 儲存按鈕 -->
+            <div class="d-flex justify-content-end gap-2 mb-4">
+                <a href="{% url 'booking:income_tax_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> 取消
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> 儲存
+                </button>
+            </div>
+    </form>
+</div>
+{% endblock %}
+
+{% load static %}
+{% block extra_js %}
+<!-- Thousand Separator JS -->
+<script src="{% static 'js/thousand-separator.js' %}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 初始化千分位格式化
+        ThousandSeparator.init('.amount-field', { maxDecimals: 0 });
+
+        // 暫繳金額同步到暫繳-62欄
+        const provisionalPayment = document.getElementById('id_provisional_payment');
+        const provisionalCol62 = document.getElementById('id_provisional_col62');
+
+        if (provisionalPayment && provisionalCol62) {
+            provisionalPayment.addEventListener('blur', function () {
+                provisionalCol62.value = this.value;
+                // 觸發格式化
+                const event = new Event('blur');
+                provisionalCol62.dispatchEvent(event);
+            });
+        }
+
+        // Enter 鍵導航功能
+        const formInputs = document.querySelectorAll('input:not([readonly]), select, textarea');
+        formInputs.forEach((input, index) => {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    // 找到下一個可用的輸入欄位
+                    let nextIndex = index + 1;
+                    while (nextIndex < formInputs.length) {
+                        const nextInput = formInputs[nextIndex];
+                        // 跳過隱藏或唯讀的欄位
+                        if (!nextInput.hasAttribute('readonly') &&
+                            nextInput.offsetParent !== null &&
+                            !nextInput.disabled) {
+                            nextInput.focus();
+                            break;
+                        }
+                        nextIndex++;
+                    }
+                }
+            });
+        });
+
+        // TODO: 未來將在此加入自動計算邏輯
+        // calculateFields() 函數將處理 h, j, k 的自動計算
+    });
+</script>
+{% endblock %}
