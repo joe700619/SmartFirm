@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}股東交易明細 - {{ shareholder.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="mb-3">
+        <a href="{% url 'registration:shareholder_roster' %}?company_id={{ shareholder.company.id }}" class="btn btn-secondary">← 返回股東名冊</a>
+    </div>
+
+    <h2>股東交易明細</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">股東資料</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>股東姓名：</strong>{{ shareholder.name }}</p>
+                    <p><strong>身分證字號/統一編號：</strong>{{ shareholder.identifier }}</p>
+                    <p><strong>公司：</strong>{{ shareholder.company.companyName }} ({{ shareholder.company.companyId }})</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>聯絡電話：</strong>{{ shareholder.phone|default:"-" }}</p>
+                    <p><strong>Email：</strong>{{ shareholder.email|default:"-" }}</p>
+                    <p><strong>地址：</strong>{{ shareholder.address|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>股權交易歷史</h4>
+        </div>
+        <div class="card-body">
+            {% if history %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>交易日期</th>
+                            <th>交易類型</th>
+                            <th class="text-right">變動股數</th>
+                            <th class="text-right">交易金額</th>
+                            <th class="text-right">累計持股</th>
+                            <th>備註</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                        <tr>
+                            <td>{{ item.transaction.transaction_date }}</td>
+                            <td>
+                                {% if item.transaction.transaction_type == 'founding' %}
+                                <span class="badge badge-primary">{{ item.transaction.get_transaction_type_display }}</span>
+                                {% elif item.transaction.transaction_type == 'transfer_in' or item.transaction.transaction_type == 'capital_increase' %}
+                                <span class="badge badge-success">{{ item.transaction.get_transaction_type_display }}</span>
+                                {% elif item.transaction.transaction_type == 'transfer_out' or item.transaction.transaction_type == 'capital_reduction' %}
+                                <span class="badge badge-danger">{{ item.transaction.get_transaction_type_display }}</span>
+                                {% else %}
+                                <span class="badge badge-secondary">{{ item.transaction.get_transaction_type_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right {% if item.transaction.quantity > 0 %}text-success{% elif item.transaction.quantity < 0 %}text-danger{% endif %}">{% if item.transaction.quantity > 0 %}+{% endif %}{{ item.transaction.quantity|floatformat:0 }}</td>
+                            <td class="text-right">{% if item.transaction.amount %}${{ item.transaction.amount|floatformat:0 }}{% else %}-{% endif %}</td>
+                            <td class="text-right font-weight-bold">{{ item.running_balance|floatformat:0 }}</td>
+                            <td>{{ item.transaction.note|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-weight-bold bg-light">
+                            <td colspan="4">目前持股總計</td>
+                            <td class="text-right">{% if history %}{{ history.last.running_balance|floatformat:0 }}{% else %}0{% endif %}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">此股東尚無交易記錄</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}股東名冊查詢{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>股東名冊查詢</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'registration:shareholder_roster' %}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="company_id">公司名稱</label>
+                            <select name="company_id" id="company_id" class="form-control" required>
+                                <option value="">請選擇公司</option>
+                                {% for company in companies %}
+                                <option value="{{ company.id }}" {% if selected_company_id == company.id|stringformat:"s" %}selected{% endif %}>{{ company.companyName }} ({{ company.companyId }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="target_date">查詢日期</label>
+                            <input type="date" name="target_date" id="target_date" class="form-control" value="{{ target_date }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary btn-block">查詢</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if roster %}
+    <div class="card">
+        <div class="card-header">
+            <h4>{{ company.companyName }} ({{ company.companyId }}) - 股東名冊</h4>
+            <p class="mb-0">查詢日期：{{ target_date }} | 總股數：{{ total_shares|floatformat:0 }}</p>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>股東姓名</th>
+                            <th>身分證字號/統一編號</th>
+                            <th>聯絡電話</th>
+                            <th>Email</th>
+                            <th class="text-right">持股股數</th>
+                            <th class="text-right">持股比例</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in roster %}
+                        <tr>
+                            <td>{{ item.shareholder.name }}</td>
+                            <td>{{ item.shareholder.identifier }}</td>
+                            <td>{{ item.shareholder.phone|default:"-" }}</td>
+                            <td>{{ item.shareholder.email|default:"-" }}</td>
+                            <td class="text-right">{{ item.balance|floatformat:0 }}</td>
+                            <td class="text-right">{{ item.percentage }}%</td>
+                            <td><a href="{% url 'registration:shareholder_detail' item.shareholder.id %}" class="btn btn-sm btn-info">查看交易明細</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-weight-bold">
+                            <td colspan="4">合計</td>
+                            <td class="text-right">{{ total_shares|floatformat:0 }}</td>
+                            <td class="text-right">100.00%</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% elif selected_company_id %}
+    <div class="alert alert-info">此公司尚無股東資料</div>
+    {% endif %}
+</div>
+{% endblock %}

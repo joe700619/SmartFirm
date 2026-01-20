@@ -1,0 +1,1 @@
+<td class="text-end">{% if trans.amount %}{{ trans.amount|floatformat:2|intcomma }}{% else %}-{% endif %}</td>

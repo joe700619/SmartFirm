@@ -111,29 +111,38 @@
             <!-- 註冊系統 - 可展開選單 -->
             <li class="sidebar-menu-item">
                 <a href="#"
-                    class="sidebar-link sidebar-link-parent {% if request.resolver_match.app_name == 'registration' %}active{% endif %}"
+                    class="sidebar-link sidebar-link-parent {% if 'registration' in request.resolver_match.namespaces %}active{% endif %}"
                     data-bs-toggle="collapse" data-bs-target="#registrationSubmenu"
-                    aria-expanded="{% if request.resolver_match.app_name == 'registration' %}true{% else %}false{% endif %}"
+                    aria-expanded="{% if 'registration' in request.resolver_match.namespaces %}true{% else %}false{% endif %}"
                     title="登記系統">
                     <i class="bi bi-clipboard-check"></i>
                     <span>登記系統</span>
                     <i class="bi bi-chevron-down submenu-arrow"></i>
                 </a>
-                <ul class="collapse submenu {% if request.resolver_match.app_name == 'registration' %}show{% endif %}"
+                <ul class="collapse submenu {% if 'registration' in request.resolver_match.namespaces %}show{% endif %}"
                     id="registrationSubmenu">
                     <li>
-                        <a href="/registration/"
-                            class="sidebar-link sidebar-sublink {% if request.path == '/registration/' %}active{% endif %}"
-                            title="登記首頁">
-                            <i class="bi bi-house"></i>
-                            <span>登記首頁</span>
+                        <a href="{% url 'registration:shareholders:roster' %}"
+                            class="sidebar-link sidebar-sublink {% if 'roster' in request.path %}active{% endif %}"
+                            title="股東名冊">
+                            <i class="bi bi-people-fill"></i>
+                            <span>股東名冊</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'admin_module:customer_list' %}" class="sidebar-link sidebar-sublink"
-                            title="客戶列表">
-                            <i class="bi bi-building"></i>
-                            <span>客戶列表</span>
+                        <a href="{% url 'registration:shareholders:list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'shareholders' in request.path and 'list' in request.path %}active{% endif %}"
+                            title="股東管理">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>股東管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'registration:shareholders:transaction_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'transactions' in request.path %}active{% endif %}"
+                            title="股權交易">
+                            <i class="bi bi-card-list"></i>
+                            <span>股權交易</span>
                         </a>
                     </li>
                 </ul>

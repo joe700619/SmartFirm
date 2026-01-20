@@ -248,6 +248,33 @@ def api_customer_info(request):
         return JsonResponse({'error': 'Customer not found'}, status=404)
 
 
+def search_companies_api(request):
+    """API: 搜尋公司"""
+    query = request.GET.get('q', '').strip()
+    
+    if not query:
+        return JsonResponse({'companies': []})
+    
+    # Search by company name or company ID
+    companies = BasicInformation.objects.filter(
+        Q(companyName__icontains=query) | Q(companyId__icontains=query)
+    )[:20]  # Limit to 20 results
+    
+    data = {
+        'companies': [
+            {
+                'id': c.id,
+                'companyName': c.companyName,
+                'companyId': c.companyId,
+            }
+            for c in companies
+        ]
+    }
+    
+    return JsonResponse(data)
+
+
+
 # ========== 收文系統 ==========
 
 def incoming_mail_list(request):

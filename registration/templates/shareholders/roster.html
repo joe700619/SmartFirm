@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}股東名冊查詢 - SmartFirm{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<style>
+    /* Custom Timeline Styles */
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+        list-style: none;
+    }
+
+    .timeline:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 40px;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .timeline-item:hover {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .timeline-item.active {
+        background-color: #e9ecef;
+        border-radius: 4px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 14px;
+        top: 5px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #6c757d;
+        z-index: 1;
+    }
+
+    .timeline-item.active .timeline-marker {
+        background: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .timeline-content {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .timeline-date {
+        font-weight: bold;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+
+    .timeline-title {
+        color: #212529;
+        font-weight: 500;
+    }
+
+    .timeline-desc {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    /* Layout Tweaks */
+    .roster-pane {
+        height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Part 1: Company Selection (Searchable) -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h4 class="mb-0"><i class="bi bi-people-fill"></i> 股東名冊查詢</h4>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                <input type="text" id="companyInput" class="form-control form-control-lg"
+                                    list="companyList" placeholder="請輸入公司名稱或統編搜尋...">
+                                <datalist id="companyList">
+                                    {% for company in companies %}
+                                    <option data-value="{{ company.id }}"
+                                        value="{{ company.companyName }} ({{ company.companyId }})"></option>
+                                    {% endfor %}
+                                </datalist>
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch"><i
+                                        class="bi bi-x-lg"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Part 2: Transaction Timeline -->
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="bi bi-clock-history"></i> 交易歷程</h5>
+                </div>
+                <div class="card-body p-0 roster-pane">
+                    <div id="timelineLoading" class="text-center p-4 d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div id="timelineContainer" class="p-3">
+                        <p class="text-center text-muted mt-5">請先選擇公司以檢視歷程</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 3: Shareholder Roster -->
+        <div class="col-md-9">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-table"></i> 股東名冊
+                        <span id="rosterDateBadge" class="badge bg-secondary ms-2">-</span>
+                    </h5>
+                    <div id="rosterStats">
+                        <span class="fw-bold me-3">實收資本額: <span id="totalCapitalDisplay">0</span></span>
+                        <span class="fw-bold me-3">總股數: <span id="totalSharesDisplay">0</span></span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="rosterLoading" class="text-center p-5 d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="rosterTable" class="table table-striped table-hover w-100">
+                            <thead>
+                                <tr>
+                                    <th>股東姓名</th>
+                                    <th>身分證字號/統一編號</th>
+                                    <th>股票類型</th>
+                                    <th class="text-end">持有股數</th>
+                                    <th class="text-end">股票金額</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data populated by DataTables -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        let rosterTable;
+        let currentCompanyId = null;
+
+        // Initialize DataTable
+        rosterTable = $('#rosterTable').DataTable({
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/zh-HANT.json"
+            },
+            columns: [
+                { data: 'name' },
+                { data: 'identifier' },
+                { data: 'stock_type' },
+                {
+                    data: 'balance',
+                    className: 'text-end',
+                    render: $.fn.dataTable.render.number(',', '.', 0)
+                },
+                {
+                    data: 'amount',
+                    className: 'text-end',
+                    render: $.fn.dataTable.render.number(',', '.', 0)
+                }
+            ],
+            order: [[3, 'desc']], // Sort by shares desc
+            deferRender: true
+        });
+
+        // Handle Company Selection via Input + Datalist
+        $('#companyInput').on('input', function () {
+            const val = $(this).val();
+            const option = $(`#companyList option[value="${val}"]`);
+
+            if (option.length > 0) {
+                const companyId = option.data('value');
+                if (companyId && companyId !== currentCompanyId) {
+                    currentCompanyId = companyId;
+                    loadCompanyTimeline(companyId);
+                }
+            }
+        });
+
+        $('#clearSearch').on('click', function () {
+            $('#companyInput').val('').trigger('input');
+            $('#timelineContainer').html('<p class="text-center text-muted mt-5">請先選擇公司以檢視歷程</p>');
+            rosterTable.clear().draw();
+            $('#totalSharesDisplay').text('0');
+            $('#totalCapitalDisplay').text('0');
+            $('#rosterDateBadge').text('-');
+            currentCompanyId = null;
+        });
+
+        // Function to load Timeline
+        function loadCompanyTimeline(companyId) {
+            $('#timelineContainer').hide();
+            $('#timelineLoading').removeClass('d-none');
+
+            $.ajax({
+                url: `/registration/shareholders/api/company/${companyId}/transactions/`,
+                method: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        renderTimeline(response.timeline);
+                    } else {
+                        $('#timelineContainer').html(`<div class="alert alert-danger">${response.error}</div>`);
+                    }
+                },
+                error: function () {
+                    $('#timelineContainer').html('<div class="alert alert-danger">載入失敗</div>');
+                },
+                complete: function () {
+                    $('#timelineLoading').addClass('d-none');
+                    $('#timelineContainer').fadeIn();
+                }
+            });
+        }
+
+        // Function to Render Timeline
+        function renderTimeline(transactions) {
+            if (transactions.length === 0) {
+                $('#timelineContainer').html('<div class="alert alert-info">此公司尚無交易紀錄</div>');
+                // Auto-load current roster if no transactions (snapshot as of today)
+                loadRosterSnapshot(new Date().toISOString().split('T')[0]);
+                return;
+            }
+
+            let html = '<ul class="timeline">';
+
+            // Add "Current" node at the top
+            const today = new Date().toISOString().split('T')[0];
+            html += `
+            <li class="timeline-item active" data-date="${today}">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">現在 (最新狀態)</div>
+                    <div class="timeline-title">目前名冊</div>
+                </div>
+            </li>
+        `;
+
+            transactions.forEach((tx) => {
+                html += `
+                <li class="timeline-item" data-date="${tx.date}">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">${tx.date}</div>
+                        <div class="timeline-title">${tx.type}</div>
+                    </div>
+                </li>
+            `;
+            });
+
+            html += '</ul>';
+            $('#timelineContainer').html(html);
+
+            // Bind Click Events
+            $('.timeline-item').on('click', function () {
+                $('.timeline-item').removeClass('active');
+                $(this).addClass('active');
+                const date = $(this).data('date');
+                loadRosterSnapshot(date);
+            });
+
+            // Trigger loading the latest roster
+            $('.timeline-item').first().click();
+        }
+
+        // Function to Load Roster Snapshot
+        function loadRosterSnapshot(date) {
+            if (!currentCompanyId) return;
+
+            $('#rosterLoading').removeClass('d-none');
+
+            $.ajax({
+                url: `/registration/shareholders/api/company/${currentCompanyId}/roster/${date}/`,
+                method: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        // Update Table
+                        rosterTable.clear();
+                        rosterTable.rows.add(response.roster);
+                        rosterTable.draw();
+
+                        // Update Stats
+                        $('#totalSharesDisplay').text(new Intl.NumberFormat().format(response.total_shares));
+                        $('#totalCapitalDisplay').text(new Intl.NumberFormat().format(response.total_capital));
+                        $('#rosterDateBadge').text(response.target_date);
+                    }
+                },
+                complete: function () {
+                    $('#rosterLoading').addClass('d-none');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

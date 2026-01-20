@@ -19,6 +19,7 @@ urlpatterns = [
     # API
     path('api/contacts/', views.api_contacts, name='api_contacts'),
     path('api/customer-info/', views.api_customer_info, name='api_customer_info'),
+    path('api/search-companies/', views.search_companies_api, name='api_search_companies'),
     
     # 收文系統
     path('incoming-mails/', views.incoming_mail_list, name='incoming_mail_list'),

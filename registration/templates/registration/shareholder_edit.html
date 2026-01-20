@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}編輯股東資料 - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-people-fill"></i> 編輯股東資料</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" id="shareholder-form">
+                        {% csrf_token %}
+
+                        <!-- (1) 基本資料 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-building"></i> (1) 基本資料</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="company_id" class="form-label">統一編號 <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="company_id" name="company_id"
+                                                value="{{ company_id }}" required readonly>
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                id="search-customer-btn">
+                                                <i class="bi bi-search"></i> 搜尋
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">點擊「搜尋」從管理系統選擇客戶</small>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="company_name" class="form-label">公司名稱 <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="company_name" name="company_name"
+                                            value="{{ company_name }}" required readonly>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="event_date" class="form-label">日期 <span
+                                                class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="event_date" name="event_date"
+                                            value="{{ event_date }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="event_reason" class="form-label">事由 <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="event_reason" name="event_reason"
+                                            placeholder="例如：新設立、增資、股權轉讓等" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- (2) 股東明細基本資料 -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-people"></i> (2) 股東明細基本資料</h5>
+                                <button type="button" class="btn btn-sm btn-success" id="add-shareholder-btn">
+                                    <i class="bi bi-plus-circle"></i> 新增股東
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="shareholders-table">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th width="20%">股東姓名 <span class="text-danger">*</span></th>
+                                                <th width="15%">身分證字號/統一編號 <span class="text-danger">*</span></th>
+                                                <th width="20%">地址</th>
+                                                <th width="15%">聯絡電話</th>
+                                                <th width="20%">Email</th>
+                                                <th width="10%">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="shareholders-tbody">
+                                            {% for shareholder in shareholders %}
+                                            <tr class="shareholder-row">
+                                                <td>
+                                                    <input type="hidden" name="shareholder_id[]"
+                                                        value="{{ shareholder.id }}">
+                                                    <input type="text" class="form-control" name="name[]"
+                                                        value="{{ shareholder.name }}" required>
+                                                </td>
+                                                <td><input type="text" class="form-control" name="identifier[]"
+                                                        value="{{ shareholder.identifier }}" required></td>
+                                                <td><input type="text" class="form-control" name="address[]"
+                                                        value="{{ shareholder.address }}"></td>
+                                                <td><input type="text" class="form-control" name="phone[]"
+                                                        value="{{ shareholder.phone }}"></td>
+                                                <td><input type="email" class="form-control" name="email[]"
+                                                        value="{{ shareholder.email }}"></td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-danger delete-row-btn">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% if not shareholders %}
+                                            <tr class="no-data-row">
+                                                <td colspan="6" class="text-center text-muted">
+                                                    <i class="bi bi-info-circle"></i> 尚無股東資料，請點擊「新增股東」按鈕新增
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <small class="text-muted"><i class="bi bi-info-circle"></i> 股東姓名和身分證字號/統一編號為必填欄位</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'registration:shareholder_roster' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> 儲存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 客戶搜尋 Modal -->
+<div class="modal fade" id="customerSearchModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-search"></i> 搜尋客戶（從管理系統）</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="customer-search-input" class="form-label">搜尋公司名稱或統一編號</label>
+                    <input type="text" class="form-control" id="customer-search-input" placeholder="輸入公司名稱或統一編號...">
+                    <small class="form-text text-muted">輸入至少1個字元開始搜尋</small>
+                </div>
+                <div id="search-results" class="list-group" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-search"></i>
+                        <p class="mb-0">請輸入搜尋關鍵字</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tbody = document.getElementById('shareholders-tbody');
+        const addBtn = document.getElementById('add-shareholder-btn');
+        const searchBtn = document.getElementById('search-customer-btn');
+        const customerModal = new bootstrap.Modal(document.getElementById('customerSearchModal'));
+        const searchInput = document.getElementById('customer-search-input');
+        const searchResults = document.getElementById('search-results');
+        let searchTimeout;
+
+        // 新增股東列
+        addBtn.addEventListener('click', function () {
+            // 移除"尚無股東資料"提示
+            const noDataRow = tbody.querySelector('.no-data-row');
+            if (noDataRow) {
+                noDataRow.remove();
+            }
+
+            const newRow = document.createElement('tr');
+            newRow.className = 'shareholder-row';
+            newRow.innerHTML = `
+            <td>
+                <input type="hidden" name="shareholder_id[]" value="">
+                <input type="text" class="form-control" name="name[]" placeholder="股東姓名" required>
+            </td>
+            <td><input type="text" class="form-control" name="identifier[]" placeholder="身分證字號或統一編號" required></td>
+            <td><input type="text" class="form-control" name="address[]" placeholder="地址"></td>
+            <td><input type="text" class="form-control" name="phone[]" placeholder="電話"></td>
+            <td><input type="email" class="form-control" name="email[]" placeholder="Email"></td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-danger delete-row-btn">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+            tbody.appendChild(newRow);
+
+            // 為新按鈕添加刪除事件
+            newRow.querySelector('.delete-row-btn').addEventListener('click', function () {
+                if (confirm('確定要刪除這個股東嗎？')) {
+                    newRow.remove();
+                    // 如果沒有股東列了，顯示提示
+                    if (tbody.querySelectorAll('.shareholder-row').length === 0) {
+                        tbody.innerHTML = `
+                        <tr class="no-data-row">
+                            <td colspan="6" class="text-center text-muted">
+                                <i class="bi bi-info-circle"></i> 尚無股東資料，請點擊「新增股東」按鈕新增
+                            </td>
+                        </tr>
+                    `;
+                    }
+                }
+            });
+        });
+
+        // 現有刪除按鈕事件
+        tbody.addEventListener('click', function (e) {
+            if (e.target.closest('.delete-row-btn')) {
+                const btn = e.target.closest('.delete-row-btn');
+                if (confirm('確定要刪除這個股東嗎？')) {
+                    btn.closest('tr').remove();
+                    if (tbody.querySelectorAll('.shareholder-row').length === 0) {
+                        tbody.innerHTML = `
+                        <tr class="no-data-row">
+                            <td colspan="6" class="text-center text-muted">
+                                <i class="bi bi-info-circle"></i> 尚無股東資料，請點擊「新增股東」按鈕新增
+                            </td>
+                        </tr>
+                    `;
+                    }
+                }
+            }
+        });
+
+        // 客戶搜尋功能
+        if (searchBtn) {
+            searchBtn.addEventListener('click', function () {
+                customerModal.show();
+                setTimeout(() => searchInput.focus(), 500);
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 1) {
+                    searchResults.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-search"></i><p class="mb-0">請輸入搜尋關鍵字</p></div>';
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch('/booking/api/search-customers/?q=' + encodeURIComponent(query))
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.customers.length === 0) {
+                                searchResults.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-exclamation-circle"></i><p class="mb-0">找不到符合的客戶</p></div>';
+                                return;
+                            }
+
+                            let html = '';
+                            data.customers.forEach(customer => {
+                                html += '<a href="#" class="list-group-item list-group-item-action customer-item" data-customer=\'' + JSON.stringify(customer) + '\'>';
+                                html += '<div class="d-flex w-100 justify-content-between">';
+                                html += '<h6 class="mb-1">' + customer.company_name + '</h6>';
+                                html += '<small class="text-muted">' + customer.unified_business_number + '</small>';
+                                html += '</div>';
+                                html += '<small class="text-muted">' + (customer.registration_address || '無地址資料') + '</small>';
+                                html += '</a>';
+                            });
+                            searchResults.innerHTML = html;
+
+                            // 客戶選擇事件
+                            document.querySelectorAll('.customer-item').forEach(item => {
+                                item.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    const customer = JSON.parse(this.dataset.customer);
+
+                                    document.getElementById('company_name').value = customer.company_name;
+                                    document.getElementById('company_id').value = customer.unified_business_number;
+
+                                    // 關閉modal並重新載入頁面以獲取該公司的股東資料
+                                    // 使用 customer.id (主鍵) 而不是 unified_business_number
+                                    customerModal.hide();
+                                    window.location.href = '?company_id=' + customer.id;
+                                });
+                            });
+                        })
+                        .catch(error => {
+                            console.error('搜尋錯誤:', error);
+                            searchResults.innerHTML = '<div class="alert alert-danger">搜尋時發生錯誤，請稍後再試</div>';
+                        });
+                }, 300);
+            });
+        }
+    });
+</script>
+{% endblock %}
