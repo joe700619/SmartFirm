@@ -7,6 +7,7 @@ urlpatterns = [
     # Sub-modules
     path('shareholders/', include('registration.shareholders.urls')),
     path('progress/', include('registration.progress.urls')),
+    path('board/', include('registration.board.urls')),
     path('misc/', include('registration.misc.urls')),
     
     # Redirects for old URLs (backward compatibility)

@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+{% block extra_css %}
+<style>
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #items-table {
+        min-width: 1200px;
+    }
+
+    .checkbox-cell {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .checkbox-cell input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ action }}</h2>
+        <a href="{% url 'admin_module:vat_check:list' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i>
+            返回列表</a>
+    </div>
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <form method="post" id="vat-check-form">
+        {% csrf_token %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> 基本資訊</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.date.id_for_label }}" class="form-label">日期 <span
+                                class="text-danger">*</span></label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                        <div class="text-danger small">{{ form.date.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.check_period.id_for_label }}" class="form-label">檢查期間 <span
+                                class="text-danger">*</span></label>
+                        {{ form.check_period }}
+                        {% if form.check_period.errors %}
+                        <div class="text-danger small">{{ form.check_period.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.inspector.id_for_label }}" class="form-label">檢查人員 <span
+                                class="text-danger">*</span></label>
+                        {{ form.inspector }}
+                        {% if form.inspector.errors %}
+                        <div class="text-danger small">{{ form.inspector.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.inspectee.id_for_label }}" class="form-label">受檢人員 <span
+                                class="text-danger">*</span></label>
+                        {{ form.inspectee }}
+                        {% if form.inspectee.errors %}
+                        <div class="text-danger small">{{ form.inspectee.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">完成狀態 <span
+                                class="text-danger">*</span></label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                        <div class="text-danger small">{{ form.status.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-journal-text"></i> 說明事項</h5>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">進項買受人有無錯誤</li>
+                    <li class="mb-2">進項金額不能多1個零</li>
+                    <li class="mb-2">奇勝重複扣抵記得按下去檢查</li>
+                    <li class="mb-0">銷項電子發票記得要下載並申報</li>
+                </ol>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-table"></i> 檢查明細</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm table-hover" id="items-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th colspan="2" class="text-center table-primary">基本資料</th>
+                                <th colspan="4" class="text-center table-warning">檢查項目</th>
+                                <th colspan="5" class="text-center table-info">401資料</th>
+                                <th rowspan="2" class="text-center align-middle">操作</th>
+                            </tr>
+                            <tr>
+                                <th class="table-primary">統一編號</th>
+                                <th class="table-primary">公司名稱</th>
+                                <th class="table-warning">買受人檢查</th>
+                                <th class="table-warning">進項金額檢查</th>
+                                <th class="table-warning">進項重複檢查</th>
+                                <th class="table-warning">銷項電子發票檢查</th>
+                                <th class="table-info">銷項金額</th>
+                                <th class="table-info">進項金額</th>
+                                <th class="table-info">留抵稅額</th>
+                                <th class="table-info">應納稅額</th>
+                                <th class="table-info">應退稅額</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-tbody">
+                            {% if vat_check %}
+                            {% for item in vat_check.items.all %}
+                            <tr class="item-row">
+                                <td><input type="text" class="form-control form-control-sm company-id" placeholder="統編"
+                                        value="{{ item.company_id }}" maxlength="8"></td>
+                                <td><input type="text" class="form-control form-control-sm company-name"
+                                        placeholder="公司名稱" value="{{ item.company_name }}"></td>
+                                <td class="checkbox-cell">
+                                    <input type="checkbox" class="form-check-input input-buyer" {{
+                                        item.input_buyer|yesno:"checked," }}>
+                                </td>
+                                <td class="checkbox-cell">
+                                    <input type="checkbox" class="form-check-input check-input-amount" {{
+                                        item.check_input_amount|yesno:"checked," }}>
+                                </td>
+                                <td class="checkbox-cell">
+                                    <input type="checkbox" class="form-check-input input-duplicate" {{
+                                        item.input_duplicate|yesno:"checked," }}>
+                                </td>
+                                <td class="checkbox-cell">
+                                    <input type="checkbox" class="form-check-input output-e-invoice" {{
+                                        item.output_e_invoice|yesno:"checked," }}>
+                                </td>
+                                <td><input type="text"
+                                        class="form-control form-control-sm amount-field form401-output-amount"
+                                        placeholder="0" value="{{ item.form401_output_amount|default:'' }}"></td>
+                                <td><input type="text"
+                                        class="form-control form-control-sm amount-field form401-input-amount"
+                                        placeholder="0" value="{{ item.form401_input_amount|default:'' }}"></td>
+                                <td><input type="text" class="form-control form-control-sm amount-field tax-credit"
+                                        placeholder="0" value="{{ item.tax_credit_carried_forward|default:'' }}"></td>
+                                <td><input type="text" class="form-control form-control-sm amount-field tax-payable"
+                                        placeholder="0" value="{{ item.tax_payable|default:'' }}"></td>
+                                <td><input type="text" class="form-control form-control-sm amount-field tax-refundable"
+                                        placeholder="0" value="{{ item.tax_refundable|default:'' }}"></td>
+                                <td class="text-center"><button type="button" class="btn btn-sm btn-danger delete-row"
+                                        tabindex="-1"><i class="bi bi-trash"></i></button></td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-sm btn-success" id="add-row-btn" tabindex="-1"><i
+                        class="bi bi-plus-circle"></i> 新增明細行</button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mb-4">
+            <a href="{% url 'admin_module:vat_check:list' %}" class="btn btn-secondary" tabindex="-1"><i
+                    class="bi bi-x-circle"></i> 取消</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> 儲存</button>
+        </div>
+    </form>
+</div>
+<script src="{% static 'js/thousand-separator.js' %}"></script>
+<script src="{% static 'js/enter-key-navigation.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tbody = document.getElementById('items-tbody');
+        const addRowBtn = document.getElementById('add-row-btn');
+        const form = document.getElementById('vat-check-form');
+        ThousandSeparator.init('.amount-field', { maxDecimals: 2 });
+        EnterKeyNavigation.initTable('#items-table', {
+            addRowOnLast: true,
+            addRowCallback: function () {
+                addNewRow();
+                const lastRow = tbody.lastElementChild;
+                const firstInput = lastRow.querySelector('input');
+                if (firstInput) { setTimeout(() => { firstInput.focus(); if (firstInput.select) firstInput.select(); }, 100); }
+            }
+        });
+        addRowBtn.addEventListener('click', function () { addNewRow(); });
+        tbody.addEventListener('click', function (e) {
+            if (e.target.closest('.delete-row')) {
+                const row = e.target.closest('tr');
+                if (tbody.children.length > 1) { row.remove(); } else { alert('至少需要保留一行明細！'); }
+            }
+        });
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const rows = tbody.querySelectorAll('.item-row');
+            const itemsData = [];
+            rows.forEach(function (row) {
+                const itemData = {
+                    company_id: row.querySelector('.company-id').value,
+                    company_name: row.querySelector('.company-name').value,
+                    input_buyer: row.querySelector('.input-buyer').checked ? 'Y' : '',
+                    check_input_amount: row.querySelector('.check-input-amount').checked ? 'Y' : '',
+                    input_duplicate: row.querySelector('.input-duplicate').checked ? 'Y' : '',
+                    output_e_invoice: row.querySelector('.output-e-invoice').checked ? 'Y' : '',
+                    form401_output_amount: ThousandSeparator.parseNumber(row.querySelector('.form401-output-amount').value),
+                    form401_input_amount: ThousandSeparator.parseNumber(row.querySelector('.form401-input-amount').value),
+                    tax_credit_carried_forward: ThousandSeparator.parseNumber(row.querySelector('.tax-credit').value),
+                    tax_payable: ThousandSeparator.parseNumber(row.querySelector('.tax-payable').value),
+                    tax_refundable: ThousandSeparator.parseNumber(row.querySelector('.tax-refundable').value)
+                };
+                itemsData.push(JSON.stringify(itemData));
+            });
+            itemsData.forEach(function (itemJson) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'items';
+                input.value = itemJson;
+                form.appendChild(input);
+            });
+            form.submit();
+        });
+        function addNewRow() {
+            const newRow = document.createElement('tr');
+            newRow.className = 'item-row';
+            newRow.innerHTML = `
+<td><input type="text" class="form-control form-control-sm company-id" placeholder="統編" maxlength="8"></td>
+<td><input type="text" class="form-control form-control-sm company-name" placeholder="公司名稱"></td>
+<td class="checkbox-cell"><input type="checkbox" class="form-check-input input-buyer"></td>
+<td class="checkbox-cell"><input type="checkbox" class="form-check-input check-input-amount"></td>
+<td class="checkbox-cell"><input type="checkbox" class="form-check-input input-duplicate"></td>
+<td class="checkbox-cell"><input type="checkbox" class="form-check-input output-e-invoice"></td>
+<td><input type="text" class="form-control form-control-sm amount-field form401-output-amount" placeholder="0"></td>
+<td><input type="text" class="form-control form-control-sm amount-field form401-input-amount" placeholder="0"></td>
+<td><input type="text" class="form-control form-control-sm amount-field tax-credit" placeholder="0"></td>
+<td><input type="text" class="form-control form-control-sm amount-field tax-payable" placeholder="0"></td>
+<td><input type="text" class="form-control form-control-sm amount-field tax-refundable" placeholder="0"></td>
+<td class="text-center"><button type="button" class="btn btn-sm btn-danger delete-row" tabindex="-1"><i class="bi bi-trash"></i></button></td>
+`;
+            tbody.appendChild(newRow);
+            const amountFields = newRow.querySelectorAll('.amount-field');
+            amountFields.forEach(field => { ThousandSeparator.initElement(field, { maxDecimals: 2 }); });
+        }
+        if (tbody.children.length === 0) { addNewRow(); }
+    });
+</script>
+{% endblock %}

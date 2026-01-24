@@ -12,8 +12,11 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-    <!-- Custom CSS -->
+    <!-- SmartFirm Modern Theme -->
     {% load static %}
+    <link rel="stylesheet" href="{% static 'css/smartfirm-theme.css' %}">
+
+    <!-- Custom CSS (Material Design sidebar/layout) -->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
     {% block extra_css %}{% endblock %}
@@ -134,7 +137,7 @@
                             class="sidebar-link sidebar-sublink {% if 'shareholders' in request.path and 'list' in request.path %}active{% endif %}"
                             title="股東管理">
                             <i class="bi bi-person-lines-fill"></i>
-                            <span>股東管理</span>
+                            <span>股東及董監事管理</span>
                         </a>
                     </li>
                     <li>
@@ -143,6 +146,14 @@
                             title="股權交易">
                             <i class="bi bi-card-list"></i>
                             <span>股權交易</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'registration:board:list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'board' in request.path %}active{% endif %}"
+                            title="董監名單">
+                            <i class="bi bi-person-badge"></i>
+                            <span>董監名單</span>
                         </a>
                     </li>
                 </ul>
@@ -202,6 +213,29 @@
                     </li>
                 </ul>
             </li>
+            <!-- 人事系統 - 可展開選單 -->
+            <li class="sidebar-menu-item">
+                <a href="#"
+                    class="sidebar-link sidebar-link-parent {% if 'hr' in request.resolver_match.namespaces %}active{% endif %}"
+                    data-bs-toggle="collapse" data-bs-target="#hrSubmenu"
+                    aria-expanded="{% if 'hr' in request.resolver_match.namespaces %}true{% else %}false{% endif %}"
+                    title="人事系統">
+                    <i class="bi bi-person-badge-fill"></i>
+                    <span>人事系統</span>
+                    <i class="bi bi-chevron-down submenu-arrow"></i>
+                </a>
+                <ul class="collapse submenu {% if 'hr' in request.resolver_match.namespaces %}show{% endif %}"
+                    id="hrSubmenu">
+                    <li>
+                        <a href="{% url 'hr:employee_list' %}"
+                            class="sidebar-link sidebar-sublink {% if 'employee' in request.path %}active{% endif %}"
+                            title="員工管理">
+                            <i class="bi bi-people"></i>
+                            <span>員工管理</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
         </ul>
     </nav>
 
@@ -211,9 +245,27 @@
         <div class="top-bar">
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center">
+                    {% block page_header_wrapper %}
                     <h5 class="mb-0">{% block page_header %}{% endblock %}</h5>
+                    {% endblock %}
                     <div>
-                        <!-- 可添加使用者選單、通知等 -->
+                        {% if user.is_authenticated %}
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-secondary">
+                                <i class="bi bi-person-circle me-1"></i> {{ user.username }}
+                            </span>
+                            <form action="{% url 'logout' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                    <i class="bi bi-box-arrow-right"></i> 登出
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> 登入
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

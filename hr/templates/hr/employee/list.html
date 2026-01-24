@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}員工列表 | SmartFirm{% endblock %}
+
+{% block extra_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<style>
+    /* DataTables Hover Styling */
+    table.dataTable.hover tbody tr:hover,
+    table.dataTable.display tbody tr:hover {
+        background-color: #f6f6f6;
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+員工資料管理
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col-md-6">
+        <a href="{% url 'hr:employee_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> 新增員工
+        </a>
+    </div>
+    <div class="col-md-6">
+        <ul class="nav nav-pills justify-content-end">
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'active' %}active{% endif %}" href="?status=active">在職</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'resigned' %}active{% endif %}"
+                    href="?status=resigned">離職</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'leave' %}active{% endif %}" href="?status=leave">留職停薪</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="employeeTable" class="table table-hover align-middle">
+                <thead class="table-light border-bottom border-2 fw-bold">
+                    <tr>
+                        <th width="40" class="text-center">
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        <th>員工編號</th>
+                        <th>姓名</th>
+                        <th>狀態</th>
+                        <th>分機</th>
+                        <th>Email</th>
+                        <th>組別</th>
+                        <th>職稱</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" name="employee_ids" value="{{ employee.pk }}"
+                                class="form-check-input employee-checkbox">
+                        </td>
+                        <td>{{ employee.employee_id }}</td>
+                        <td>{{ employee.name }}</td>
+                        <td>
+                            <span class="badge rounded-pill bg-{{ employee.status|yesno:'success,secondary,warning' }}">
+                                {{ employee.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ employee.extension|default:"-" }}</td>
+                        <td>{{ employee.email|default:"-" }}</td>
+                        <td>{{ employee.get_group_display|default:"-" }}</td>
+                        <td>{{ employee.get_job_title_display|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'hr:employee_edit' employee.pk %}" class="btn btn-sm border-0 text-primary"
+                                title="編輯">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a href="{% url 'hr:employee_delete' employee.pk %}" class="btn btn-sm border-0 text-danger"
+                                title="刪除">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize DataTables
+        var table = $('#employeeTable').DataTable({
+            "language": {
+                "processing": "處理中...",
+                "loadingRecords": "載入中...",
+                "lengthMenu": "顯示 _MENU_ 項結果",
+                "zeroRecords": "沒有符合的結果",
+                "info": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項",
+                "infoEmpty": "顯示第 0 至 0 項結果，共 0 項",
+                "infoFiltered": "(從 _MAX_ 項結果中過濾)",
+                "infoPostFix": "",
+                "search": "搜尋:",
+                "paginate": {
+                    "first": "第一頁",
+                    "previous": "上一頁",
+                    "next": "下一頁",
+                    "last": "最後一頁"
+                },
+                "aria": {
+                    "sortAscending": ": 升冪排列",
+                    "sortDescending": ": 降冪排列"
+                }
+            },
+            "order": [[1, "asc"]], // Default sort by Employee ID
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 8] } // Disable sorting for Checkbox and Actions
+            ],
+            "pageLength": 25,
+            "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                '<"row"<"col-sm-12"tr>>' +
+                '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        });
+
+        // Select All Checkbox Logic - Bind to the checkbox itself
+        // Use 'click' instead of 'change' for better consistency with DataTables
+        $('#selectAll').on('click', function (e) {
+            // Get all rows with search applied
+            var rows = table.rows({ 'search': 'applied' }).nodes();
+            // Check/uncheck checkboxes for all rows in the table
+            $('input[type="checkbox"]', rows).prop('checked', this.checked);
+        });
+
+        // Handle click on checkbox to update state of "Select all" control
+        $('#employeeTable tbody').on('change', 'input[type="checkbox"]', function () {
+            // If checkbox is not checked
+            if (!this.checked) {
+                var el = $('#selectAll').get(0);
+                // If "Select all" control is checked, uncheck it
+                if (el && el.checked && ('indeterminate' in el)) {
+                    el.indeterminate = true;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

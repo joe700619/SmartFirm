@@ -398,7 +398,7 @@
         $('#edit_par_value, #edit_quantity').on('input blur', () => calculateStockAmount('edit'));
 
         // DataTables
-        $('#transactionsTable').DataTable({
+        const table = $('#transactionsTable').DataTable({
             language: {
                 "sProcessing": "處理中...",
                 "sLengthMenu": "顯示 _MENU_ 筆資料",
@@ -551,9 +551,8 @@
             });
         });
 
-        // Open Edit Modal
-        $('.edit-btn').on('click', function () {
-            const transId = $(this).data('id');
+        // Function to Open Edit Modal with Data
+        function openEditModal(transId) {
             $('#editAlertArea').html('');
             $.ajax({
                 url: `/registration/shareholders/api/transaction/get/${transId}/`,
@@ -580,7 +579,26 @@
                 },
                 error: function () { alert('取得交易資料時發生錯誤'); }
             });
+        }
+
+        // Open Edit Modal from Button Click
+        // Use delegated event to handle buttons in DataTables (even on other pages)
+        $(document).on('click', '.edit-btn', function () {
+            const transId = $(this).data('id');
+            openEditModal(transId);
         });
+
+        // Check URL for edit_id and auto-open modal
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit_id');
+        if (editId) {
+            // Remove the parameter from URL without refreshing to prevent reopening on reload
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+
+            // Open the modal
+            openEditModal(editId);
+        }
 
         // Save Edit
         $('#saveEditBtn').on('click', function () {

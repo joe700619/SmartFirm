@@ -67,6 +67,10 @@ class BasicInformation(models.Model):
         null=True,
         verbose_name='重要訊息描述'
     )
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name='已刪除'
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='建立時間'
@@ -147,6 +151,10 @@ class Contact(models.Model):
         null=True,
         verbose_name='備註'
     )
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name='已刪除'
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='建立時間'
@@ -176,6 +184,10 @@ class IncomingMail(models.Model):
         unique=True,
         editable=False,
         verbose_name='序號'
+    )
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name='已刪除'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -325,6 +337,10 @@ class CustomerChange(models.Model):
         verbose_name='租約及稅單'
     )
     
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name='已刪除'
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='建立時間'
@@ -372,6 +388,10 @@ class VATCheck(models.Model):
         choices=STATUS_CHOICES,
         default='pending',
         verbose_name='完成狀態'
+    )
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name='已刪除'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -549,6 +569,7 @@ class BookkeepingChecklist(models.Model):
     conclusion = models.TextField(blank=True, null=True, verbose_name='結論')
     
     # 系統欄位
+    is_deleted = models.BooleanField(default=False, verbose_name='已刪除')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
     

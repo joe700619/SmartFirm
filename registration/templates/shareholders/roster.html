@@ -167,6 +167,7 @@
                                     <th>股票類型</th>
                                     <th class="text-end">持有股數</th>
                                     <th class="text-end">股票金額</th>
+                                    <th class="text-center">功能</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -209,11 +210,36 @@
                     data: 'amount',
                     className: 'text-end',
                     render: $.fn.dataTable.render.number(',', '.', 0)
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        if (!currentCompanyId) return '';
+                        // Generate URL manually since we can't fully use django url tag in js easily without placeholders
+                        // URL pattern: /registration/shareholders/history/<company_id>/<shareholder_id>/
+                        return `<a href="/registration/shareholders/history/${currentCompanyId}/${row.id}/" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i> 查詢</a>`;
+                    }
                 }
             ],
             order: [[3, 'desc']], // Sort by shares desc
             deferRender: true
         });
+
+        // Check for URL parameters (company_id) to restore state
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialCompanyId = urlParams.get('company_id');
+
+        if (initialCompanyId) {
+            const option = $(`#companyList option[data-value="${initialCompanyId}"]`);
+            if (option.length > 0) {
+                const companyName = option.val();
+                $('#companyInput').val(companyName);
+                currentCompanyId = initialCompanyId;
+                loadCompanyTimeline(initialCompanyId);
+            }
+        }
 
         // Handle Company Selection via Input + Datalist
         $('#companyInput').on('input', function () {

@@ -50,3 +50,8 @@ Before writing code, understand the requirements:
 - Navigate to the new URL.
 - Test the functionality (Create, Read, Update, Delete).
 - Check for any console errors.
+
+## 9. Number Formatting Requirements
+- **Thousand Separators**: All numeric values displayed in tables or input fields MUST include thousand separators (e.g., `1,000`, `1,000,000`).
+  - For templates, use `|intcomma` filter from `django.contrib.humanize`.
+  - For input fields, ensure JavaScript or backend logic formats the value appropriately.

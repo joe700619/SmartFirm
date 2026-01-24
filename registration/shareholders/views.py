@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -32,6 +33,33 @@ class ShareholderDetailView(View):
         # Note: This needs to be updated to work with new model structure
         # For now, redirecting to shareholder list
         return redirect('registration:shareholders:list')
+
+
+class ShareholderHistoryView(View):
+    """股東交易歷史視圖"""
+
+    def get(self, request, company_id, shareholder_id):
+        company = get_object_or_404(BasicInformation, id=company_id)
+        shareholder = get_object_or_404(Shareholder, id=shareholder_id)
+        
+        # Get transactions
+        transactions = StockTransaction.objects.filter(
+            company_holding__company=company,
+            company_holding__shareholder=shareholder
+        ).order_by('transaction_date', 'created_at')
+
+        # Calculate totals
+        current_shares = sum(t.quantity for t in transactions)
+        current_amount = sum(t.stock_amount for t in transactions)
+
+        context = {
+            'company': company,
+            'shareholder': shareholder,
+            'transactions': transactions,
+            'current_shares': current_shares,
+            'current_amount': current_amount,
+        }
+        return render(request, 'shareholders/history.html', context)
 
 
 class ShareholderListView(View):

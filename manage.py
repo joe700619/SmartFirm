@@ -4,6 +4,12 @@ import os
 import sys
 
 
+# Apply Django 3.14 compatibility patch
+try:
+    import smartfirm_project.fix_django_314
+except ImportError:
+    pass
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smartfirm_project.settings')

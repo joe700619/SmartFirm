@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ action }} - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">{{ action }}</h2>
+
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                {# 基本資料區塊 #}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">基本資料</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.company_id.label_tag }}
+                                {{ form.company_id }}
+                                {% if form.company_id.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.company_id.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.company_name.label_tag }}
+                                {{ form.company_name }}
+                                {% if form.company_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.company_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.accounting_assistant.label_tag }}
+                                {{ form.accounting_assistant }}
+                                {% if form.accounting_assistant.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.accounting_assistant.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.overdue_days.label_tag }}
+                                {{ form.overdue_days }}
+                                {% if form.overdue_days.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.overdue_days.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.establishment_date.label_tag }}
+                                {{ form.establishment_date }}
+                                {% if form.establishment_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.establishment_date.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.change_type.label_tag }}
+                                {{ form.change_type }}
+                                {% if form.change_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.change_type.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# 檢查事項區塊 #}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">檢查事項</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    {{ form.invoice_quantity }}
+                                    {{ form.invoice_quantity.label_tag }}
+                                </div>
+                                {% if form.invoice_quantity.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.invoice_quantity.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    {{ form.id_copy }}
+                                    {{ form.id_copy.label_tag }}
+                                </div>
+                                {% if form.id_copy.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.id_copy.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    {{ form.lease_and_tax }}
+                                    {{ form.lease_and_tax.label_tag }}
+                                </div>
+                                {% if form.lease_and_tax.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.lease_and_tax.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# 提交按鈕 #}
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'admin_module:customer_change:list' %}" class="btn btn-secondary">取消</a>
+                    <button type="submit" class="btn btn-primary">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

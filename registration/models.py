@@ -1,8 +1,35 @@
 from django.db import models
 from admin_module.models import BasicInformation
 
+from django.conf import settings
 
-class Shareholder(models.Model):
+class SmartFirmBaseModel(models.Model):
+    """基礎模型：包含建立/修改資訊與軟刪除功能"""
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='建立者'
+    )
+    is_deleted = models.BooleanField(default=False, verbose_name='是否刪除')
+
+    class Meta:
+        abstract = True
+
+    def delete(self, using=None, keep_parents=False):
+        """軟刪除：標記為已刪除"""
+        self.is_deleted = True
+        self.save()
+
+    def restore(self):
+        """還原刪除"""
+        self.is_deleted = False
+        self.save()
+
+class Shareholder(SmartFirmBaseModel):
     """股東基本資料模型（集中管理）"""
     identifier = models.CharField(
         max_length=20,
@@ -30,13 +57,10 @@ class Shareholder(models.Model):
         null=True,
         verbose_name='電子郵件'
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='建立時間'
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='更新時間'
+    birthday = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='生日'
     )
 
     class Meta:
@@ -49,7 +73,7 @@ class Shareholder(models.Model):
         return f"{self.name} ({self.identifier})"
 
 
-class CompanyShareholding(models.Model):
+class CompanyShareholding(SmartFirmBaseModel):
     """公司持股關係模型"""
     shareholder = models.ForeignKey(
         Shareholder,
@@ -63,10 +87,6 @@ class CompanyShareholding(models.Model):
         related_name='shareholdings',
         verbose_name='公司'
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='建立時間'
-    )
 
     class Meta:
         db_table = 'company_shareholding'
@@ -79,7 +99,7 @@ class CompanyShareholding(models.Model):
         return f"{self.shareholder.name} - {self.company.companyName}"
 
 
-class StockTransaction(models.Model):
+class StockTransaction(SmartFirmBaseModel):
     """股權交易記錄模型"""
     TRANSACTION_TYPE_CHOICES = [
         ('founding', '設立'),
@@ -149,14 +169,6 @@ class StockTransaction(models.Model):
         blank=True,
         verbose_name='備註'
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='建立時間'
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='更新時間'
-    )
 
     class Meta:
         db_table = 'stock_transaction'
@@ -166,3 +178,53 @@ class StockTransaction(models.Model):
 
     def __str__(self):
         return f"{self.company_holding.shareholder.name} - {self.get_transaction_type_display()} ({self.quantity}股) - {self.transaction_date}"
+
+
+class BoardMember(SmartFirmBaseModel):
+    """董監事模型"""
+    TITLE_CHOICES = [
+        ('chairman', '董事長'),
+        ('director', '董事'),
+        ('supervisor', '監察人'),
+    ]
+
+    company = models.ForeignKey(
+        BasicInformation,
+        on_delete=models.CASCADE,
+        related_name='board_members',
+        verbose_name='公司'
+    )
+    person = models.ForeignKey(
+        Shareholder,
+        on_delete=models.CASCADE,
+        related_name='board_positions',
+        verbose_name='姓名'
+    )
+    title = models.CharField(
+        max_length=20,
+        choices=TITLE_CHOICES,
+        verbose_name='職稱'
+    )
+    representative_of = models.ForeignKey(
+        Shareholder,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='represented_by',
+        verbose_name='所代表法人',
+        help_text='若此人為法人代表，請選擇所代表之法人'
+    )
+    birthday = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='生日'
+    )
+
+    class Meta:
+        db_table = 'board_member'
+        verbose_name = '董監事'
+        verbose_name_plural = '董監事'
+        ordering = ['company', 'title', 'person']
+
+    def __str__(self):
+        return f"{self.company.companyName} - {self.get_title_display()}: {self.person.name}"

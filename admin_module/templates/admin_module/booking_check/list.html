@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}記帳進度檢查列表 - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="cont
+
+ainer-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-journal-check"></i> 記帳進度檢查列表</h2>
+        <a href="{% url 'admin_module:booking_check:create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> 新增記帳進度檢查
+        </a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 篩選表單 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> 篩選條件</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    {{ filter_form.check_period.label_tag }}
+                    {{ filter_form.check_period }}
+                </div>
+                <div class="col-md-4">
+                    {{ filter_form.status.label_tag }}
+                    {{ filter_form.status }}
+                </div>
+                <div class="col-md-4">
+                    {{ filter_form.bookkeeper.label_tag }}
+                    {{ filter_form.bookkeeper }}
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> 搜尋
+                    </button>
+                    <a href="{% url 'admin_module:booking_check:list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> 清除篩選
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 列表 -->
+    <div class="card">
+        <div class="card-body">
+            {% if checklists %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>序號</th>
+                            <th>檢查期別</th>
+                            <th>統一編號</th>
+                            <th>公司名稱</th>
+                            <th>記帳助理</th>
+                            <th>狀態</th>
+                            <th>建立時間</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for checklist in checklists %}
+                        <tr>
+                            <td>{{ checklist.sequence_number }}</td>
+                            <td>{{ checklist.check_period }}</td>
+                            <td>{{ checklist.company_id }}</td>
+                            <td>{{ checklist.company_name }}</td>
+                            <td>{{ checklist.bookkeeper }}</td>
+                            <td>
+                                {% if checklist.status == 'not_started' %}
+                                <span class="badge bg-warning text-dark">尚未開始</span>
+                                {% else %}
+                                <span class="badge bg-success">已完成</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ checklist.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <a href="{% url 'admin_module:booking_check:update' checklist.pk %}"
+                                    class="btn btn-sm btn-outline-primary" title="編輯">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'admin_module:booking_check:delete' checklist.pk %}"
+                                    class="btn btn-sm btn-outline-danger" title="刪除">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分頁 -->
+            {% if checklists.has_other_pages %}
+            <nav aria-label="分頁導航">
+                <ul class="pagination justify-content-center">
+                    {% if checklists.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">首頁</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ checklists.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">上一頁</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">第 {{ checklists.number }} 頁，共 {{ checklists.paginator.num_pages }}
+                            頁</span>
+                    </li>
+
+                    {% if checklists.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ checklists.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">下一頁</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ checklists.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">末頁</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 目前沒有任何記帳進度檢查記錄。
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -12,7 +12,7 @@ from registration.models import StockTransaction, Shareholder, CompanyShareholdi
 from admin_module.models import BasicInformation
 
 
-class StockTransactionListView(LoginRequiredMixin, View):
+class StockTransactionListView(View):
     """股權交易列表視圖"""
     
     def get(self, request):
@@ -183,6 +183,7 @@ def search_shareholders_api(request):
                 'id': s.id,
                 'name': s.name,
                 'identifier': s.identifier,
+                'birthday': s.birthday.strftime('%Y-%m-%d') if s.birthday else None,
             }
             for s in shareholders
         ]

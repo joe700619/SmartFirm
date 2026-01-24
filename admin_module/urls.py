@@ -1,10 +1,28 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'admin_module'
 
 urlpatterns = [
-    # 客戶管理功能
+    # Customer module (new modular structure)
+    path('customer/', include('admin_module.customer.urls')),
+    
+    # Booking Check module
+    path('booking-check/', include('admin_module.booking_check.urls')),
+    
+    # Contact module
+    path('contact/', include('admin_module.contact.urls')),
+    
+    # Customer Change module
+    path('customer-change/', include('admin_module.customer_change.urls')),
+    
+    # VAT Check module
+    path('vat-check/', include('admin_module.vat_check.urls')),
+    
+    # Incoming Mail module
+    path('incoming-mail/', include('admin_module.incoming_mail.urls')),
+    
+    # 客戶管理功能 (backward compatible URLs)
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/create/', views.customer_create, name='customer_create'),
     path('customers/<int:pk>/update/', views.customer_update, name='customer_update'),

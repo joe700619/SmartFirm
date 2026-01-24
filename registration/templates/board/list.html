@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}董監事名單 - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people-fill"></i> 董監事名單</h2>
+        <button type="button" class="btn btn-primary" id="addMemberBtn">
+            <i class="bi bi-plus-circle"></i> 新增董監事
+        </button>
+    </div>
+
+    {% if members %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" id="membersTable">
+            <thead class="table-secondary">
+                <tr>
+                    <th>公司名稱</th>
+                    <th>公司統編</th>
+                    <th>職稱</th>
+                    <th>姓名</th>
+                    <th>身分證字號</th>
+                    <th>生日</th>
+                    <th>所代表法人</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr>
+                    <td>{{ member.company.companyName }}</td>
+                    <td>{{ member.company.companyId }}</td>
+                    <td>{{ member.get_title_display }}</td>
+                    <td>{{ member.person.name }}</td>
+                    <td>{{ member.person.identifier }}</td>
+                    <td>{{ member.birthday|default:"-" }}</td>
+                    <td>
+                        {% if member.representative_of %}
+                        {{ member.representative_of.name }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-warning edit-btn" data-id="{{ member.id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle"></i> 目前尚無董監事資料。
+    </div>
+    {% endif %}
+</div>
+
+<!-- 編輯/新增 Modal (共用 Form，區分 ID) -->
+{% include "registration/board_modals.html" %}
+
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<style>
+    .list-group-item-action {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        let currentMode = ''; // 'create' or 'edit'
+
+        // Alert helper
+        window.showAlert = function (elementId, message, type = 'danger') {
+            const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+            $('#' + elementId).html(alertHtml);
+        }
+
+        // DataTables
+        const table = $('#membersTable').DataTable({
+            language: {
+                "sProcessing": "處理中...",
+                "sLengthMenu": "顯示 _MENU_ 筆資料",
+                "sZeroRecords": "沒有符合的資料",
+                "sInfo": "顯示第 _START_ 至 _END_ 筆資料，共 _TOTAL_ 筆",
+                "sInfoEmpty": "顯示第 0 至 0 筆資料，共 0 筆",
+                "sInfoFiltered": "(從 _MAX_ 筆資料中篩選)",
+                "sSearch": "搜尋:",
+                "oPaginate": { "sFirst": "第一頁", "sPrevious": "上一頁", "sNext": "下一頁", "sLast": "最後一頁" }
+            },
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "全部"]],
+            order: [[0, 'asc'], [2, 'asc']], // Company then Title
+            columnDefs: [{ orderable: false, targets: [7] }],
+            responsive: true
+        });
+
+        // Company & Shareholder Search Logic (Moved to modals include or separate file ideally, putting specific logic here)
+        // ... (See below for full implementation including search logic verification)
+    });
+</script>
+
+<!-- Load logic script separately or inline -->
+<script>
+    // Search Modal Logic
+    $(document).ready(function () {
+        // Company Search
+        const companyModal = new bootstrap.Modal(document.getElementById('companySearchModal'));
+        const companySearchInput = document.getElementById('company-search-input');
+        const companySearchResults = document.getElementById('company-search-results');
+        let companySearchTimeout;
+
+        $('.search-company-btn').on('click', function () {
+            currentMode = $(this).data('mode');
+            companyModal.show();
+            setTimeout(() => companySearchInput.focus(), 500);
+        });
+
+        companySearchInput.addEventListener('input', function () {
+            clearTimeout(companySearchTimeout);
+            const query = this.value;
+            if (query.length < 2) { companySearchResults.innerHTML = ''; return; }
+            companySearchTimeout = setTimeout(() => {
+                $.ajax({
+                    url: '/admin-module/api/search-companies/',
+                    data: { q: query },
+                    success: function (data) {
+                        let html = '';
+                        data.companies.forEach(item => {
+                            html += `
+                                <a href="#" class="list-group-item list-group-item-action company-select-item" 
+                                   data-id="${item.id}" data-name="${item.companyName}">
+                                    <strong>${item.companyName}</strong><br>
+                                    <small class="text-muted">統編：${item.companyId}</small>
+                                </a>`;
+                        });
+                        companySearchResults.innerHTML = html || '<div class="list-group-item text-muted">查無資料</div>';
+                    }
+                });
+            }, 500);
+        });
+
+        $(document).on('click', '.company-select-item', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            $(`#${currentMode}_company`).val(id);
+            $(`#${currentMode}_company_name`).val(name);
+            companyModal.hide();
+        });
+
+        // Shareholder Search (Applies to both "Name" and "Representative Of")
+        const shareholderModal = new bootstrap.Modal(document.getElementById('shareholderSearchModal'));
+        const shareholderSearchInput = document.getElementById('shareholder-search-input');
+        const shareholderSearchResults = document.getElementById('shareholder-search-results');
+        let shareholderSearchTimeout;
+        let shareholderTargetField = ''; // 'shareholder' or 'representative_of'
+
+        $('.search-shareholder-btn').on('click', function () {
+            currentMode = $(this).data('mode');
+            shareholderTargetField = $(this).data('target'); // e.g. 'shareholder' or 'representative_of'
+            shareholderModal.show();
+            setTimeout(() => shareholderSearchInput.focus(), 500);
+        });
+
+        shareholderSearchInput.addEventListener('input', function () {
+            clearTimeout(shareholderSearchTimeout);
+            const query = this.value;
+            if (query.length < 2) { shareholderSearchResults.innerHTML = ''; return; }
+            shareholderSearchTimeout = setTimeout(() => {
+                $.ajax({
+                    url: '/registration/shareholders/api/search/',
+                    data: { q: query },
+                    success: function (data) {
+                        let html = '';
+                        data.shareholders.forEach(item => {
+                            html += `
+                                <a href="#" class="list-group-item list-group-item-action shareholder-select-item" 
+                                   data-id="${item.id}" data-name="${item.name}" data-identifier="${item.identifier}" data-birthday="${item.birthday || ''}">
+                                    <strong>${item.name}</strong><br>
+                                    <small class="text-muted">證號：${item.identifier}</small>
+                                </a>`;
+                        });
+                        shareholderSearchResults.innerHTML = html || '<div class="list-group-item text-muted">查無資料</div>';
+                    }
+                });
+            }, 500);
+        });
+
+        $(document).on('click', '.shareholder-select-item', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            const identifier = $(this).data('identifier');
+            const birthday = $(this).data('birthday');
+
+            if (shareholderTargetField === 'shareholder') {
+                $(`#${currentMode}_shareholder`).val(id);
+                $(`#${currentMode}_shareholder_name`).val(name);
+                $(`#${currentMode}_identifier`).val(identifier);
+                if (birthday) {
+                    $(`#${currentMode}_birthday`).val(birthday);
+                }
+            } else if (shareholderTargetField === 'representative_of') {
+                $(`#${currentMode}_representative_of`).val(id);
+                $(`#${currentMode}_representative_of_name`).val(name);
+            }
+
+            shareholderModal.hide();
+        });
+
+        // CRUD Operations
+        // Show Create Modal
+        $('#addMemberBtn').on('click', function () {
+            $('#createAlertArea').html('');
+            $('#createMemberForm')[0].reset();
+            // Reset hidden fields
+            $('#create_company, #create_shareholder, #create_representative_of').val('');
+            $('#createMemberModal').modal('show');
+        });
+
+        // Save Create
+        $('#saveCreateBtn').on('click', function () {
+            const form = document.getElementById('createMemberForm');
+            if (!form.reportValidity()) return;
+
+            const formData = new FormData(form);
+            $.ajax({
+                url: '{% url "registration:board:api_create" %}',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        showAlert('createAlertArea', '✅ 新增成功', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                },
+                error: function (xhr) {
+                    showAlert('createAlertArea', '❌ ' + (xhr.responseJSON?.error || '錯誤'));
+                }
+            });
+        });
+
+        // Show Edit Modal
+        const editModal = new bootstrap.Modal(document.getElementById('editMemberModal'));
+
+        $(document).on('click', '.edit-btn', function () {
+            const id = $(this).data('id');
+            $('#editAlertArea').html('');
+
+            $.ajax({
+                url: `/registration/board/api/get/${id}/`,
+                success: function (response) {
+                    if (response.success) {
+                        const m = response.member;
+                        $('#edit_id').val(m.id);
+
+                        // Populate Company
+                        $('#edit_company').val(m.company_id);
+                        $('#edit_company_name').val(m.company_name);
+
+                        // Populate Person
+                        $('#edit_shareholder').val(m.shareholder_id);
+                        $('#edit_shareholder_name').val(m.shareholder_name);
+                        $('#edit_identifier').val(m.identifier);
+
+                        // Populate Misc
+                        $('#edit_title').val(m.title);
+                        $('#edit_birthday').val(m.birthday);
+
+                        // Populate Rep
+                        $('#edit_representative_of').val(m.representative_of_id);
+                        $('#edit_representative_of_name').val(m.representative_of_name);
+
+                        // Update Update Action URL? or use generic update endpoint
+                        // We used a generic endpoint /api/update/<pk>/ in views
+                        // But here we need to know the pk.
+
+                        editModal.show();
+                    }
+                }
+            });
+        });
+
+        // Save Edit
+        $('#saveEditBtn').on('click', function () {
+            const form = document.getElementById('editMemberForm');
+            const id = $('#edit_id').val();
+            if (!form.reportValidity()) return;
+
+            const formData = new FormData(form);
+            $.ajax({
+                url: `/registration/board/api/update/${id}/`,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        showAlert('editAlertArea', '✅ 更新成功', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                },
+                error: function (xhr) {
+                    showAlert('editAlertArea', '❌ ' + (xhr.responseJSON?.error || '錯誤'));
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

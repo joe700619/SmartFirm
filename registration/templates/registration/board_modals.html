@@ -1,0 +1,210 @@
+<!-- 新增 Modal -->
+<div class="modal fade" id="createMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-plus"></i> 新增董監事</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="createAlertArea"></div>
+                <form id="createMemberForm">
+                    {% csrf_token %}
+
+                    <!-- Company -->
+                    <div class="mb-3">
+                        <label class="form-label">公司 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="hidden" id="create_company" name="company_id">
+                            <input type="text" class="form-control" id="create_company_name" readonly
+                                placeholder="點擊搜尋選擇公司">
+                            <button class="btn btn-outline-secondary search-company-btn" type="button"
+                                data-mode="create">
+                                <i class="bi bi-search"></i> 搜尋
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Person -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">姓名 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="hidden" id="create_shareholder" name="shareholder_id">
+                                <input type="text" class="form-control" id="create_shareholder_name" readonly
+                                    placeholder="點擊搜尋選擇股東">
+                                <button class="btn btn-outline-secondary search-shareholder-btn" type="button"
+                                    data-mode="create" data-target="shareholder">
+                                    <i class="bi bi-search"></i> 搜尋
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Identifier (Readonly) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">身分證字號</label>
+                            <input type="text" class="form-control" id="create_identifier" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Title -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">職稱 <span class="text-danger">*</span></label>
+                            <select class="form-control" id="create_title" name="title" required>
+                                <option value="chairman">董事長</option>
+                                <option value="director">董事</option>
+                                <option value="supervisor">監察人</option>
+                            </select>
+                        </div>
+                        <!-- Birthday -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">生日</label>
+                            <input type="date" class="form-control" id="create_birthday" name="birthday">
+                        </div>
+                    </div>
+
+                    <!-- Representative Of -->
+                    <div class="mb-3">
+                        <label class="form-label">所代表法人</label>
+                        <div class="input-group">
+                            <input type="hidden" id="create_representative_of" name="representative_of_id">
+                            <input type="text" class="form-control" id="create_representative_of_name" readonly
+                                placeholder="選擇法人股東（選填）">
+                            <button class="btn btn-outline-secondary search-shareholder-btn" type="button"
+                                data-mode="create" data-target="representative_of">
+                                <i class="bi bi-search"></i> 搜尋
+                            </button>
+                        </div>
+                        <small class="text-muted">若此人為法人代表，請選擇所代表之法人</small>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveCreateBtn">新增</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 編輯 Modal -->
+<div class="modal fade" id="editMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> 編輯董監事</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="editAlertArea"></div>
+                <form id="editMemberForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit_id" name="id">
+
+                    <!-- Company -->
+                    <div class="mb-3">
+                        <label class="form-label">公司 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="hidden" id="edit_company" name="company_id">
+                            <input type="text" class="form-control" id="edit_company_name" readonly>
+                            <button class="btn btn-outline-secondary search-company-btn" type="button" data-mode="edit">
+                                <i class="bi bi-search"></i> 搜尋
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Person -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">姓名 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="hidden" id="edit_shareholder" name="shareholder_id">
+                                <input type="text" class="form-control" id="edit_shareholder_name" readonly>
+                                <button class="btn btn-outline-secondary search-shareholder-btn" type="button"
+                                    data-mode="edit" data-target="shareholder">
+                                    <i class="bi bi-search"></i> 搜尋
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Identifier -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">身分證字號</label>
+                            <input type="text" class="form-control" id="edit_identifier" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Title -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">職稱 <span class="text-danger">*</span></label>
+                            <select class="form-control" id="edit_title" name="title" required>
+                                <option value="chairman">董事長</option>
+                                <option value="director">董事</option>
+                                <option value="supervisor">監察人</option>
+                            </select>
+                        </div>
+                        <!-- Birthday -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">生日</label>
+                            <input type="date" class="form-control" id="edit_birthday" name="birthday">
+                        </div>
+                    </div>
+
+                    <!-- Representative Of -->
+                    <div class="mb-3">
+                        <label class="form-label">所代表法人</label>
+                        <div class="input-group">
+                            <input type="hidden" id="edit_representative_of" name="representative_of_id">
+                            <input type="text" class="form-control" id="edit_representative_of_name" readonly>
+                            <button class="btn btn-outline-secondary search-shareholder-btn" type="button"
+                                data-mode="edit" data-target="representative_of">
+                                <i class="bi bi-search"></i> 搜尋
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveEditBtn">儲存變更</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 公司搜尋 Modal -->
+<div class="modal fade" id="companySearchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-search"></i> 搜尋公司</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control mb-3" id="company-search-input" placeholder="輸入公司名稱或統一編號...">
+                <div class="list-group" id="company-search-results">
+                    <!-- 搜尋結果 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 股東搜尋 Modal -->
+<div class="modal fade" id="shareholderSearchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-search"></i> 搜尋資料</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control mb-3" id="shareholder-search-input" placeholder="輸入姓名或身分證字號...">
+                <div class="list-group" id="shareholder-search-results">
+                    <!-- 搜尋結果 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

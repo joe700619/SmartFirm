@@ -7,6 +7,7 @@ app_name = 'shareholders'
 urlpatterns = [
     # Shareholder roster and management
     path('roster/', views.ShareholderRosterView.as_view(), name='roster'),
+    path('history/<int:company_id>/<int:shareholder_id>/', views.ShareholderHistoryView.as_view(), name='history'),
     path('detail/<int:shareholder_id>/', views.ShareholderDetailView.as_view(), name='detail'),
     path('list/', views.ShareholderListView.as_view(), name='list'),
     

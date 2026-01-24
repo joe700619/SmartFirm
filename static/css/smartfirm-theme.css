@@ -1,0 +1,402 @@
+/* ==============================================
+   SmartFirm Modern Theme - 深度定制 Bootstrap
+   Inspired by NiceAdmin & Modern Design Trends
+   ============================================== */
+
+/* ========== 1. Typography (字體) ========== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Font Families */
+  --font-sans-tc: 'Noto Sans TC', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+  --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+
+  /* ========== 2. Color Palette (色彩方案) ========== */
+  /* Primary - Softer, modern blue */
+  --color-primary: #4154f1;
+  --color-primary-hover: #5969f3;
+  --color-primary-active: #3749db;
+  --color-primary-light: #e6e9fc;
+  --color-primary-rgb: 65, 84, 241;
+
+  /* Semantic Colors */
+  --color-success: #198754;
+  --color-success-light: #d1e7dd;
+  --color-danger: #dc3545;
+  --color-danger-light: #f8d7da;
+  --color-warning: #f9a826;
+  --color-warning-light: #fff3cd;
+  --color-info: #0dcaf0;
+  --color-info-light: #cff4fc;
+
+  /* Neutral Palette */
+  --color-dark: #012970;
+  --color-heading: #012970;
+  --color-text: #444444;
+  --color-text-muted: #899bbd;
+  --color-border: #e0e5eb;
+
+  /* Backgrounds */
+  --bg-body: #f6f9ff;
+  --bg-card: #ffffff;
+  --bg-light: #f6f9ff;
+  --bg-dark: #f1f3f6;
+
+  /* ========== 3. Shadows (陰影) ========== */
+  /* Lighter, more subtle shadows */
+  --shadow-xs: 0 1px 2px rgba(65, 84, 241, 0.05);
+  --shadow-sm: 0 2px 4px rgba(65, 84, 241, 0.08),
+    0 0 1px rgba(65, 84, 241, 0.1);
+  --shadow-md: 0 4px 12px rgba(65, 84, 241, 0.1),
+    0 0 2px rgba(65, 84, 241, 0.12);
+  --shadow-lg: 0 10px 24px rgba(65, 84, 241, 0.12),
+    0 0 3px rgba(65, 84, 241, 0.15);
+  --shadow-hover: 0 6px 16px rgba(65, 84, 241, 0.15),
+    0 0 4px rgba(65, 84, 241, 0.1);
+
+  /* ========== 4. Border Radius (圓角) ========== */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ========== 5. Spacing (間距) ========== */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* ========== 6. Transitions (過渡效果) ========== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+/* ========== Global Overrides ========== */
+body {
+  font-family: var(--font-inter), var(--font-sans-tc), var(--font-system);
+  background-color: var(--bg-body);
+  color: var(--color-text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Headings - Bold */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700 !important;
+  color: var(--color-heading);
+}
+
+/* ========== Card Enhancements ========== */
+.card {
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background-color: var(--bg-card);
+  transition: transform var(--transition-normal),
+    box-shadow var(--transition-normal) !important;
+  overflow: hidden;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover) !important;
+  transform: translateY(-2px);
+}
+
+.card-header {
+  background-color: var(--bg-card) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  padding: var(--space-lg) var(--space-xl) !important;
+  font-weight: 700 !important;
+  color: var(--color-heading);
+  font-size: 1.05rem;
+}
+
+.card-body {
+  padding: var(--space-xl) !important;
+}
+
+.card.mb-2 {
+  margin-bottom: var(--space-md) !important;
+}
+
+/* ========== Button Enhancements ========== */
+.btn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500 !important;
+  padding: 0.55rem 1.25rem !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.01em;
+  transition: all var(--transition-normal) !important;
+  border: none !important;
+}
+
+.btn-sm {
+  padding: 0.4rem 1rem !important;
+  font-size: 0.875rem !important;
+  border-radius: var(--radius-xs) !important;
+}
+
+/* Primary Button - Gradient */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(65, 84, 241, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, #6a7ef1 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(65, 84, 241, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(65, 84, 241, 0.3);
+}
+
+/* Outline Buttons */
+.btn-outline-secondary {
+  background-color: transparent !important;
+  border: 1.5px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--bg-dark) !important;
+  border-color: var(--color-text-muted) !important;
+  color: var(--color-dark) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-outline-primary {
+  background-color: transparent !important;
+  border: 1.5px solid var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary-light) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.btn-outline-danger {
+  background-color: transparent !important;
+  border: 1.5px solid var(--color-danger) !important;
+  color: var(--color-danger) !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--color-danger-light) !important;
+  border-color: var(--color-danger) !important;
+  color: var(--color-danger) !important;
+}
+
+/* Borderless Buttons */
+.btn.border-0 {
+  padding: 0.35rem 0.5rem !important;
+  font-size: 1rem !important;
+  background: transparent !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.btn.border-0:hover {
+  transform: scale(1.15);
+  opacity: 0.8;
+}
+
+/* Button Groups */
+.btn-group {
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.btn-group .btn {
+  border-radius: 0 !important;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--radius-sm) !important;
+  border-bottom-left-radius: var(--radius-sm) !important;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--radius-sm) !important;
+  border-bottom-right-radius: var(--radius-sm) !important;
+}
+
+/* ========== Form Enhancements ========== */
+.form-control,
+.form-select {
+  border: 1.5px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.6rem 0.85rem !important;
+  font-size: 0.95rem !important;
+  color: var(--color-text);
+  transition: all var(--transition-normal) !important;
+  background-color: var(--bg-card);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(65, 84, 241, 0.1) !important;
+  outline: none;
+}
+
+.form-label {
+  color: var(--color-heading);
+  font-size: 0.9rem;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+}
+
+/* ========== Table Enhancements ========== */
+.table {
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.table thead {
+  background-color: var(--bg-light);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.table thead th {
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.8px;
+  color: var(--color-text-muted);
+  padding: 1rem 0.75rem !important;
+  border: none !important;
+}
+
+.table tbody td {
+  padding: 0.9rem 0.75rem !important;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.table-hover tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--bg-light);
+}
+
+/* ========== Badge Enhancements ========== */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.75em;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.badge.rounded-pill {
+  padding: 0.35em 0.85em;
+}
+
+/* ========== Alert Enhancements ========== */
+.alert {
+  border-radius: var(--radius-sm);
+  border: none;
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.alert-success {
+  background-color: var(--color-success-light);
+  color: #0f5132;
+}
+
+.alert-danger {
+  background-color: var(--color-danger-light);
+  color: #842029;
+}
+
+.alert-warning {
+  background-color: var(--color-warning-light);
+  color: #664d03;
+}
+
+.alert-info {
+  background-color: var(--color-info-light);
+  color: #055160;
+}
+
+/* ========== Top Bar Enhancements ========== */
+.top-bar {
+  background-color: var(--bg-card) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-xs);
+}
+
+.top-bar h5 {
+  color: var(--color-heading);
+  font-weight: 700 !important;
+  font-size: 1.15rem;
+}
+
+/* ========== Utility Classes ========== */
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-muted {
+  color: var(--color-text-muted) !important;
+}
+
+.bg-light {
+  background-color: var(--bg-light) !important;
+}
+
+/* ========== Micro-interactions ========== */
+a:not(.btn) {
+  transition: color var(--transition-fast);
+}
+
+a:not(.btn):hover {
+  opacity: 0.8;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ========== Responsive Enhancements ========== */
+@media (max-width: 768px) {
+  .card-body {
+    padding: var(--space-lg) !important;
+  }
+
+  .card-header {
+    padding: var(--space-md) var(--space-lg) !important;
+  }
+}
+
+/* ========== Print Styles ========== */
+@media print {
+  .card {
+    box-shadow: none !important;
+  }
+}

@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}股東管理 - SmartFirm{% endblock %}
+{% block title %}股東及董監事管理 - SmartFirm{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-people-fill"></i> 股東管理</h2>
+        <h2><i class="bi bi-people-fill"></i> 股東及董監事管理</h2>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createShareholderModal">
-            <i class="bi bi-plus-circle"></i> 新增股東
+            <i class="bi bi-plus-circle"></i> 新增股東及董監事
         </button>
     </div>
 
@@ -28,6 +28,7 @@
                 <tr>
                     <th>股東姓名</th>
                     <th>身分證字號/統一編號</th>
+                    <th>生日</th>
                     <th>聯絡電話</th>
                     <th>Email</th>
                     <th>操作</th>
@@ -38,6 +39,7 @@
                 <tr>
                     <td>{{ shareholder.name }}</td>
                     <td>{{ shareholder.identifier }}</td>
+                    <td>{{ shareholder.birthday|default:"—" }}</td>
                     <td>{{ shareholder.phone|default:"—" }}</td>
                     <td>{{ shareholder.email|default:"—" }}</td>
                     <td>
@@ -67,7 +69,7 @@
             </div>
             <div class="modal-body">
                 <div id="editAlertArea"></div>
-                
+
                 <form id="editShareholderForm">
                     {% csrf_token %}
                     <input type="hidden" id="edit_shareholder_id" name="shareholder_id">
@@ -76,6 +78,11 @@
                         <label for="edit_identifier" class="form-label">身分證字號/統一編號</label>
                         <input type="text" class="form-control" id="edit_identifier" name="identifier" readonly>
                         <small class="form-text text-muted">身分證字號/統一編號不可修改</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_birthday" class="form-label">生日</label>
+                        <input type="date" class="form-control" id="edit_birthday" name="birthday">
                     </div>
 
                     <div class="mb-3">
@@ -117,14 +124,20 @@
             </div>
             <div class="modal-body">
                 <div id="createAlertArea"></div>
-                
+
                 <form id="createShareholderForm">
                     {% csrf_token %}
 
                     <div class="mb-3">
-                        <label for="create_identifier" class="form-label">身分證字號/統一編號 <span class="text-danger">*</span></label>
+                        <label for="create_identifier" class="form-label">身分證字號/統一編號 <span
+                                class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="create_identifier" name="identifier" required>
                         <small class="form-text text-muted">每個身分證字號/統一編號在系統中必須唯一</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="create_birthday" class="form-label">生日</label>
+                        <input type="date" class="form-control" id="create_birthday" name="birthday">
                     </div>
 
                     <div class="mb-3">
@@ -167,138 +180,139 @@
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-$(document).ready(function() {
-    function showAlert(elementId, message, type = 'danger') {
-        const alertHtml = `
+    $(document).ready(function () {
+        function showAlert(elementId, message, type = 'danger') {
+            const alertHtml = `
             <div class="alert alert-${type} alert-dismissible fade show" role="alert">
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         `;
-        $('#' + elementId).html(alertHtml);
-        $('#' + elementId)[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-    
-    $('#shareholdersTable').DataTable({
-        language: {
-            "sProcessing": "處理中...",
-            "sLengthMenu": "顯示 _MENU_ 筆資料",
-            "sZeroRecords": "沒有符合的資料",
-            "sInfo": "顯示第 _START_ 至 _END_ 筆資料，共 _TOTAL_ 筆",
-            "sInfoEmpty": "顯示第 0 至 0 筆資料，共 0 筆",
-            "sInfoFiltered": "(從 _MAX_ 筆資料中篩選)",
-            "sSearch": "搜尋:",
-            "oPaginate": {
-                "sFirst": "第一頁",
-                "sPrevious": "上一頁",
-                "sNext": "下一頁",
-                "sLast": "最後一頁"
-            }
-        },
-        pageLength: 25,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "全部"]],
-        order: [[0, 'asc']],
-        columnDefs: [{ orderable: false, targets: [4] }],
-        responsive: true
-    });
-
-    $('.edit-btn').on('click', function() {
-        const shareholderId = $(this).data('id');
-        $('#editAlertArea').html('');
-
-        $.ajax({
-            url: `/registration/api/shareholder/${shareholderId}/`,
-            method: 'GET',
-            success: function(response) {
-                if (response.success) {
-                    const s = response.shareholder;
-                    $('#edit_shareholder_id').val(s.id);
-                    $('#edit_identifier').val(s.identifier);
-                    $('#edit_name').val(s.name);
-                    $('#edit_phone').val(s.phone);
-                    $('#edit_email').val(s.email);
-                    $('#edit_address').val(s.address);
-                    $('#editShareholderModal').modal('show');
-                } else {
-                    showAlert('editAlertArea', '❌ 取得股東資料失敗：' + response.error);
-                }
-            },
-            error: function() {
-                showAlert('editAlertArea', '❌ 取得股東資料時發生錯誤');
-            }
-        });
-    });
-
-    $('#saveEditBtn').on('click', function() {
-        const form = document.getElementById('editShareholderForm');
-        $('#editAlertArea').html('');
-        
-        if (!form.reportValidity()) {
-            return;
+            $('#' + elementId).html(alertHtml);
+            $('#' + elementId)[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        
-        const shareholderId = $('#edit_shareholder_id').val();
-        const formData = $('#editShareholderForm').serialize();
-        
-        $.ajax({
-            url: `/registration/api/shareholder/update/${shareholderId}/`,
-            method: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    showAlert('editAlertArea', '✅ 股東資料已更新', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showAlert('edit AlertArea', '❌ 更新失敗：' + response.error);
-                }
-            },
-            error: function() {
-                showAlert('editAlertArea', '❌ 更新時發生錯誤');
-            }
-        });
-    });
 
-    $('#saveCreateBtn').on('click', function() {
-        const form = document.getElementById('createShareholderForm');
-        $('#createAlertArea').html('');
-        
-        if (!form.reportValidity()) {
-            return;
-        }
-        
-        const formData = $('#createShareholderForm').serialize();
-        
-        $.ajax({
-            url: '/registration/api/shareholder/create/',
-            method: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    showAlert('createAlertArea', '✅ 股東已成功新增', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showAlert('createAlertArea', '❌ 新增失敗：' + response.error);
+        $('#shareholdersTable').DataTable({
+            language: {
+                "sProcessing": "處理中...",
+                "sLengthMenu": "顯示 _MENU_ 筆資料",
+                "sZeroRecords": "沒有符合的資料",
+                "sInfo": "顯示第 _START_ 至 _END_ 筆資料，共 _TOTAL_ 筆",
+                "sInfoEmpty": "顯示第 0 至 0 筆資料，共 0 筆",
+                "sInfoFiltered": "(從 _MAX_ 筆資料中篩選)",
+                "sSearch": "搜尋:",
+                "oPaginate": {
+                    "sFirst": "第一頁",
+                    "sPrevious": "上一頁",
+                    "sNext": "下一頁",
+                    "sLast": "最後一頁"
                 }
             },
-            error: function(xhr) {
-                const response = xhr.responseJSON;
-                if (response && response.error) {
-                    showAlert('createAlertArea', '❌ ' + response.error);
-                } else {
-                    showAlert('createAlertArea', '❌ 新增時發生錯誤：未知錯誤');
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "全部"]],
+            order: [[0, 'asc']],
+            columnDefs: [{ orderable: false, targets: [4] }],
+            responsive: true
+        });
+
+        $('.edit-btn').on('click', function () {
+            const shareholderId = $(this).data('id');
+            $('#editAlertArea').html('');
+
+            $.ajax({
+                url: `/registration/shareholders/api/get/${shareholderId}/`,
+                method: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        const s = response.shareholder;
+                        $('#edit_shareholder_id').val(s.id);
+                        $('#edit_identifier').val(s.identifier);
+                        $('#edit_birthday').val(s.birthday);
+                        $('#edit_name').val(s.name);
+                        $('#edit_phone').val(s.phone);
+                        $('#edit_email').val(s.email);
+                        $('#edit_address').val(s.address);
+                        $('#editShareholderModal').modal('show');
+                    } else {
+                        showAlert('editAlertArea', '❌ 取得股東資料失敗：' + response.error);
+                    }
+                },
+                error: function () {
+                    showAlert('editAlertArea', '❌ 取得股東資料時發生錯誤');
                 }
+            });
+        });
+
+        $('#saveEditBtn').on('click', function () {
+            const form = document.getElementById('editShareholderForm');
+            $('#editAlertArea').html('');
+
+            if (!form.reportValidity()) {
+                return;
             }
+
+            const shareholderId = $('#edit_shareholder_id').val();
+            const formData = $('#editShareholderForm').serialize();
+
+            $.ajax({
+                url: `/registration/shareholders/api/update/${shareholderId}/`,
+                method: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        showAlert('editAlertArea', '✅ 股東資料已更新', 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showAlert('edit AlertArea', '❌ 更新失敗：' + response.error);
+                    }
+                },
+                error: function () {
+                    showAlert('editAlertArea', '❌ 更新時發生錯誤');
+                }
+            });
+        });
+
+        $('#saveCreateBtn').on('click', function () {
+            const form = document.getElementById('createShareholderForm');
+            $('#createAlertArea').html('');
+
+            if (!form.reportValidity()) {
+                return;
+            }
+
+            const formData = $('#createShareholderForm').serialize();
+
+            $.ajax({
+                url: '{% url "registration:shareholders:api_create" %}',
+                method: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        showAlert('createAlertArea', '✅ 股東已成功新增', 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showAlert('createAlertArea', '❌ 新增失敗：' + response.error);
+                    }
+                },
+                error: function (xhr) {
+                    const response = xhr.responseJSON;
+                    if (response && response.error) {
+                        showAlert('createAlertArea', '❌ ' + response.error);
+                    } else {
+                        showAlert('createAlertArea', '❌ 新增時發生錯誤：未知錯誤');
+                    }
+                }
+            });
+        });
+
+        $('#createShareholderModal').on('hidden.bs.modal', function () {
+            $('#createAlertArea').html('');
+            $('#createShareholderForm')[0].reset();
+        });
+
+        $('#editShareholderModal').on('hidden.bs.modal', function () {
+            $('#editAlertArea').html('');
         });
     });
-    
-    $('#createShareholderModal').on('hidden.bs.modal', function() {
-        $('#createAlertArea').html('');
-        $('#createShareholderForm')[0].reset();
-    });
-    
-    $('#editShareholderModal').on('hidden.bs.modal', function() {
-        $('#editAlertArea').html('');
-    });
-});
 </script>
 {% endblock %}

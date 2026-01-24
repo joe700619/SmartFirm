@@ -26,6 +26,8 @@ urlpatterns = [
     path('registration/', include('registration.urls')),
     path('booking/', include('booking.urls')),
     path('admin-module/', include('admin_module.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('hr/', include('hr.urls')),
 ]
 
 # Serve media files in development

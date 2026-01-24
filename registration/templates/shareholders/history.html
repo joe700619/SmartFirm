@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load registration_extras %}
+
+{% block title %}股東交易紀錄 - SmartFirm{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body bg-light rounded-top p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-muted mb-1">交易紀錄查詢</h5>
+                            <h2 class="mb-2 fw-bold">{{ shareholder.name }}</h2>
+                            <div class="text-secondary d-flex align-items-center">
+                                <i class="bi bi-person-vcard me-2"></i>
+                                <span class="fs-5">{{ shareholder.identifier }}</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <h5 class="text-primary mb-1">{{ company.companyName }}</h5>
+                            <p class="text-muted mb-0"><i class="bi bi-building me-1"></i> {{ company.companyId }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white py-3">
+                    <div class="row text-center">
+                        <div class="col-md-4 border-end">
+                            <small class="text-muted d-block text-uppercase fw-bold">目前持股數</small>
+                            <span class="h4 fw-bold text-dark">{{ current_shares|comma_sep }}</span> <span
+                                class="text-muted fs-6">股</span>
+                        </div>
+                        <div class="col-md-4 border-end">
+                            <small class="text-muted d-block text-uppercase fw-bold">目前持股金額</small>
+                            <span class="h4 fw-bold text-dark">{{ current_amount|comma_sep }}</span> <span
+                                class="text-muted fs-6">元</span>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'registration:shareholders:roster' %}?company_id={{ company.id }}"
+                                class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> 返回名冊
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>異動明細</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">交易日期</th>
+                                    <th>交易類型</th>
+                                    <th>股票類型</th>
+                                    <th class="text-end">面額</th>
+                                    <th class="text-end">變動股數</th>
+                                    <th class="text-end">變動金額</th>
+                                    <th>備註</th>
+                                    <th>功能</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td class="ps-4 fw-medium">{{ transaction.transaction_date|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill 
+                                            {% if transaction.transaction_type == 'founding' %}bg-primary
+                                            {% elif transaction.transaction_type == 'trade' %}bg-success
+                                            {% elif transaction.transaction_type == 'transfer_in' %}bg-info text-dark
+                                            {% elif transaction.transaction_type == 'transfer_out' %}bg-warning text-dark
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.get_stock_type_display }}</td>
+                                    <td class="text-end">{{ transaction.par_value|comma_sep }}</td>
+                                    <td
+                                        class="text-end fw-bold {% if transaction.quantity > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ transaction.quantity|comma_sep }}
+                                    </td>
+                                    <td class="text-end">{{ transaction.stock_amount|comma_sep }}</td>
+                                    <td class="text-muted small">{{ transaction.note|default:"-" }}</td>
+                                    <td>
+                                        <a href="{% url 'registration:shareholders:transaction_list' %}?edit_id={{ transaction.id }}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil-square"></i> 編輯
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                        尚無交易紀錄
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
