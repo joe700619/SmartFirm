@@ -1,0 +1,102 @@
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Saving...</span>
+    </div>
+    <h4 class="mt-2 text-primary">Saving...</h4>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>資料驗證錯誤</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul id="error-list" class="mb-0"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Knowledge Note Modal -->
+<div class="modal fade" id="knowledgeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-dark">
+                <h5 class="modal-title"><i class="bi bi-journal-plus me-2"></i>加入知識庫</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="knowledgeForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">標題 (Title)</label>
+                        <input type="text" class="form-control" id="kn_title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">適用情境 (Tags)</label>
+                        <input type="text" class="form-control" id="kn_tags">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">必備文件 (Checklist)</label>
+                        <textarea class="form-control" id="kn_checklist" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">操作流程 (Steps)</label>
+                        <textarea class="form-control" id="kn_steps" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">專家注意事項 (Warnings)</label>
+                        <textarea class="form-control" id="kn_warnings" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btn-save-knowledge">存入</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Empty Forms for JS -->
+<div id="service-empty-form" class="d-none">
+    <table>
+        <tr class="service-row">
+            {{ services.empty_form.id }}
+            <td class="p-1 text-start">{{ services.empty_form.service }}</td>
+            <td class="p-1 text-start">{{ services.empty_form.service_name }}</td>
+            <!-- Removed Item -->
+            <td class="p-1">{{ services.empty_form.fee }}</td>
+            <td class="p-1 text-start">{{ services.empty_form.remarks }}</td>
+            <td class="text-center p-1">
+                <span class="btn btn-sm text-danger delete-row-btn">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <div class="d-none">{{ services.empty_form.DELETE }}</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div id="cost-empty-form" class="d-none">
+    <table>
+        <tr class="cost-row">
+            {{ cost_splits.empty_form.id }}
+            <td class="p-1 text-start">{{ cost_splits.empty_form.assistant }}</td>
+            <td class="p-1 text-center">{{ cost_splits.empty_form.ratio }}</td>
+            <td class="p-1 text-end">{{ cost_splits.empty_form.amount }}</td>
+            <td class="text-center p-1">
+                <span class="btn btn-sm text-danger delete-cost-row-btn">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <div class="d-none">{{ cost_splits.empty_form.DELETE }}</div>
+            </td>
+        </tr>
+    </table>
+</div>

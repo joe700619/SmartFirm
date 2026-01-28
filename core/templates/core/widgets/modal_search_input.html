@@ -1,0 +1,191 @@
+{% load static %}
+
+<div class="input-group modal-search-widget" id="container_{{ widget.name }}">
+    <input type="{{ widget.type }}" name="{{ widget.name }}" {% if widget.value is not None %}
+        value="{{ widget.value }}" {% endif %} {% include "django/forms/widgets/attrs.html" %}
+        id="{{ widget.attrs.id }}" class="d-none"> <!-- Hidden underlying input -->
+
+    <input type="text" id="{{ widget.attrs.id }}_display" class="form-control" readonly placeholder="請點選右側按鈕搜尋..."
+        value="{{ widget.display_value|default:'' }}">
+
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
+        data-bs-target="#modal_{{ widget.name }}">
+        <i class="bi bi-search"></i> 搜尋
+    </button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal_{{ widget.name }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ widget.modal_title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control search-term" placeholder="請輸入關鍵字...">
+                    <button class="btn btn-primary search-btn" type="button">查詢</button>
+                </div>
+                <div class="list-group search-results" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const widgetId = "{{ widget.attrs.id }}";
+        const widgetName = "{{ widget.name }}";
+        const apiUrl = "{{ widget.api_url }}";
+        // displayField/valueField might be overridden by API config, but kept as defaults
+        let displayField = "{{ widget.display_field }}";
+        let valueField = "{{ widget.value_field }}";
+        const relatedFields = JSON.parse('{{ widget.related_fields|safe }}');
+
+        const modalId = "#modal_" + widgetName;
+        const modal = document.querySelector(modalId);
+
+        if (!modal) return;
+
+        const searchBtn = modal.querySelector('.search-btn');
+        const searchInput = modal.querySelector('.search-term');
+        const resultsContainer = modal.querySelector('.search-results');
+        let dataTableInstance = null;
+
+        const executeSearch = function () {
+            const term = searchInput.value;
+
+            // Show loading state
+            resultsContainer.innerHTML = '<div class="text-center p-3">載入中...</div>';
+
+            fetch(`${apiUrl}?q=${encodeURIComponent(term)}`)
+                .then(response => response.json())
+                .then(apiResponse => {
+                    const config = apiResponse.config || {};
+                    const data = apiResponse.data || []; // Assuming new API structure: { config: {...}, data: [...] }
+                    // If API returns old structure, we need to handle it or ensure all APIs are updated.
+                    // Since we updated all 3 APIs, we expect this structure.
+
+                    if (data.length === 0) {
+                        resultsContainer.innerHTML = '<div class="p-3 text-muted">查無資料</div>';
+                        return;
+                    }
+
+                    // Update fields from config if present
+                    if (config.value_field) valueField = config.value_field;
+                    if (config.display_field) displayField = config.display_field;
+
+                    // Rebuild Table Structure
+                    resultsContainer.innerHTML = `
+                        <table id="table_${widgetName}" class="table table-striped table-hover" style="width:100%">
+                            <thead><tr></tr></thead>
+                        </table>
+                    `;
+
+                    // Prepare Columns
+                    // Add Action Column
+                    const columns = (config.columns || []).map(col => ({
+                        title: col.title,
+                        data: col.data
+                    }));
+                    columns.push({
+                        title: "操作",
+                        data: null,
+                        orderable: false,
+                        render: function (data, type, row) {
+                            return `<button class="btn btn-sm btn-primary select-row-btn" type="button">選取</button>`;
+                        }
+                    });
+
+                    // Initialize DataTables
+                    if (dataTableInstance) {
+                        dataTableInstance.destroy();
+                    }
+
+                    // Use jQuery for DataTables
+                    const tableId = `#table_${widgetName}`;
+                    dataTableInstance = $(tableId).DataTable({
+                        data: data,
+                        columns: columns,
+                        searching: false, // We use our own search input
+                        lengthChange: false, // Simplify UI
+                        pageLength: 10,
+                        language: {
+                            "emptyTable": "無資料",
+                            "info": "顯示 _START_ 到 _END_ 筆，共 _TOTAL_ 筆",
+                            "infoEmpty": "0 筆",
+                            "paginate": {
+                                "first": "第一頁",
+                                "last": "最後一頁",
+                                "next": "下一頁",
+                                "previous": "上一頁"
+                            }
+                        }
+                    });
+
+                    // Bind Click Event (Delegation)
+                    $(tableId + ' tbody').off('click', '.select-row-btn').on('click', '.select-row-btn', function () {
+                        const rowData = dataTableInstance.row($(this).parents('tr')).data();
+                        selectItem(rowData);
+                    });
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultsContainer.innerHTML = '<div class="p-3 text-danger">發生錯誤</div>';
+                });
+        };
+
+        const selectItem = function (item) {
+            // 1. Set values
+            const hiddenInput = document.getElementById(widgetId);
+            const displayInput = document.getElementById(widgetId + "_display");
+
+            if (hiddenInput) {
+                hiddenInput.value = item[valueField];
+                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            if (displayInput) displayInput.value = item[displayField];
+
+            // 2. Auto-fill related fields
+            let idPrefix = "id_";
+            if (widgetId.includes('-')) {
+                idPrefix = widgetId.substring(0, widgetId.lastIndexOf('-') + 1);
+            }
+
+            for (const [apiKey, formFieldName] of Object.entries(relatedFields)) {
+                const targetId = idPrefix + formFieldName;
+                const targetElement = document.getElementById(targetId);
+
+                if (targetElement) {
+                    targetElement.value = item[apiKey] || '';
+                    targetElement.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+
+            // 3. Move focus back to trigger button (A11y fix) or display input
+            const container = document.getElementById("container_" + widgetName);
+            if (container) {
+                const triggerBtn = container.querySelector('button[data-bs-toggle="modal"]');
+                if (triggerBtn) triggerBtn.focus();
+            }
+
+            // 4. Close modal
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            if (bsModal) bsModal.hide();
+        };
+
+        searchBtn.addEventListener('click', executeSearch);
+        searchInput.addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') executeSearch();
+        });
+
+        modal.addEventListener('shown.bs.modal', function () {
+            searchInput.focus();
+        });
+
+    })();
+</script>

@@ -1,0 +1,69 @@
+<div class="tab-pane fade show active" id="services-content" role="tabpanel">
+    <div class="d-flex justify-content-end mb-2">
+        <button type="button" class="btn btn-sm btn-outline-primary" id="add-service-row">
+            <i class="bi bi-plus-lg"></i> 新增項目
+        </button>
+    </div>
+
+    {{ services.management_form }}
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle mb-0" id="service-table">
+            <thead class="table-light text-center">
+                <tr>
+                    <th style="width: 20%;">服務代碼</th>
+                    <th style="width: 25%;">服務名稱</th>
+                    <!-- Removed Service Content Column -->
+                    <th style="width: 15%;">費用</th>
+                    <th style="width: 25%;">備註</th>
+                    <th style="width: 50px;"></th>
+                </tr>
+            </thead>
+            <tbody id="service-tbody">
+                {% for form in services.forms %}
+                <tr class="service-row">
+                    {{ form.id }}
+                    <td class="p-1 text-start">
+                        {{ form.service }}
+                        {% if form.service.errors %}
+                        <div class="text-danger small">{{ form.service.errors }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td class="p-1 text-start">{{ form.service_name }}</td>
+                    <!-- Removed Service Item TD -->
+                    <td class="p-1">
+                        {{ form.fee }} <!-- Fee Input -->
+                        {% if form.fee.errors %}
+                        <div class="text-danger small">{{ form.fee.errors }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="p-1 text-start">{{ form.remarks }}</td>
+                    <td class="text-center p-1">
+                        <span class="btn btn-sm text-danger delete-row-btn">
+                            <i class="bi bi-trash"></i>
+                        </span>
+                        <div class="d-none">{{ form.DELETE }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light fw-bold">
+                <tr>
+                    <td colspan="2" class="text-end">服務費合計：</td>
+                    <td class="text-end"><span id="total-fee">0</span></td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="text-end">代墊款合計：</td>
+                    <td class="text-end"><span id="total-advance">0</span></td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="text-end">收費總合計：</td>
+                    <td class="text-end text-primary"><span id="grand-total">0</span></td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

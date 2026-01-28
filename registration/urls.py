@@ -9,6 +9,8 @@ urlpatterns = [
     path('progress/', include('registration.progress.urls')),
     path('board/', include('registration.board.urls')),
     path('misc/', include('registration.misc.urls')),
+    path('mandate/', include(('registration.mandate.urls', 'mandate'), namespace='mandate')),
+    path('aml/', include(('registration.aml.urls', 'aml'), namespace='aml')),
     
     # Redirects for old URLs (backward compatibility)
     path('shareholder-roster/', RedirectView.as_view(

@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}登記案件進度 | SmartFirm{% endblock %}
+
+{% block extra_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<style>
+    table.dataTable.hover tbody tr:hover,
+    table.dataTable.display tbody tr:hover {
+        background-color: #f6f6f6;
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+登記案件進度管理
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col-12 d-flex justify-content-between">
+        <a href="{% url 'registration:progress:add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> 新增案件
+        </a>
+
+        <div class="btn-group" role="group" aria-label="Status Filters">
+            <a href="{% url 'registration:progress:list' %}"
+                class="btn btn-outline-secondary {% if not request.GET.status %}active{% endif %}">全部</a>
+            <a href="?status=new_case"
+                class="btn btn-outline-secondary {% if request.GET.status == 'new_case' %}active{% endif %}">新接案</a>
+            <a href="?status=discussion"
+                class="btn btn-outline-secondary {% if request.GET.status == 'discussion' %}active{% endif %}">討論中</a>
+            <a href="?status=documentation"
+                class="btn btn-outline-secondary {% if request.GET.status == 'documentation' %}active{% endif %}">製作中</a>
+            <a href="?status=government_review"
+                class="btn btn-outline-secondary {% if request.GET.status == 'government_review' %}active{% endif %}">審查中</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="progressTable" class="table table-hover align-middle">
+                <thead class="table-light border-bottom border-2 fw-bold">
+                    <tr>
+                        <th width="40" class="text-center">
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        <th>登記案件文號</th>
+                        <th>公司名稱</th>
+                        <th>案件狀態</th>
+                        <th>委任書</th>
+                        <th>主要聯絡人</th>
+                        <th>承接日期</th>
+                        <th>預計完成日</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" name="case_ids" value="{{ case.pk }}"
+                                class="form-check-input case-checkbox">
+                        </td>
+                        <td>{{ case.case_number }}</td>
+                        <td>{{ case.customer.companyName|default:"-" }}</td>
+                        <td>
+                            <span
+                                class="badge rounded-pill bg-{{ case.status|yesno:'secondary,info,primary,warning,success,dark' }}">
+                                {{ case.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ case.get_mandate_status_display }}</td>
+                        <td>{{ case.main_contact.name|default:"-" }}</td>
+                        <td>{{ case.acceptance_date|date:"Y-m-d" }}</td>
+                        <td>{{ case.due_date|date:"Y-m-d"|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'registration:progress:edit' case.pk %}"
+                                class="btn btn-sm border-0 text-primary" title="編輯">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a href="{% url 'registration:progress:delete' case.pk %}"
+                                class="btn btn-sm border-0 text-danger" title="刪除">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var table = $('#progressTable').DataTable({
+            "language": {
+                "processing": "處理中...",
+                "loadingRecords": "載入中...",
+                "lengthMenu": "顯示 _MENU_ 項結果",
+                "zeroRecords": "沒有符合的結果",
+                "info": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項",
+                "infoEmpty": "顯示第 0 至 0 項結果，共 0 項",
+                "infoFiltered": "(從 _MAX_ 項結果中過濾)",
+                "infoPostFix": "",
+                "search": "搜尋:",
+                "paginate": {
+                    "first": "第一頁",
+                    "previous": "上一頁",
+                    "next": "下一頁",
+                    "last": "最後一頁"
+                },
+                "aria": {
+                    "sortAscending": ": 升冪排列",
+                    "sortDescending": ": 降冪排列"
+                }
+            },
+            "order": [[6, "desc"]], // Sort by Acceptance Date desc
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 8] }
+            ],
+            "pageLength": 25,
+            "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                '<"row"<"col-sm-12"tr>>' +
+                '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        });
+
+        $('#selectAll').on('click', function (e) {
+            var rows = table.rows({ 'search': 'applied' }).nodes();
+            $('input[type="checkbox"]', rows).prop('checked', this.checked);
+        });
+
+        $('#progressTable tbody').on('change', 'input[type="checkbox"]', function () {
+            if (!this.checked) {
+                var el = $('#selectAll').get(0);
+                if (el && el.checked && ('indeterminate' in el)) {
+                    el.indeterminate = true;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

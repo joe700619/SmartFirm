@@ -10,32 +10,41 @@ from admin_module.models import BasicInformation
 
 
 def search_customers(request):
-    """搜尋客戶API（從管理系統的BasicInformation）"""
-    search_term = request.GET.get('q', '')
+    """API: Search Customers"""
+    term = request.GET.get('q', '')
+    if len(term) < 1:
+        return JsonResponse({'config': {}, 'data': []})
     
-    if not search_term or len(search_term) < 1:
-        return JsonResponse({'customers': []})
-    
-    # 搜尋公司名稱或統一編號（使用正確的欄位名稱）
     customers = BasicInformation.objects.filter(
-        Q(companyName__icontains=search_term) | 
-        Q(companyId__icontains=search_term)
-    )[:20]  # 限制最多返回20筆結果
+        Q(companyName__icontains=term) |
+        Q(companyId__icontains=term)
+    )[:20]
     
     results = []
-    for customer in customers:
+    for c in customers:
         results.append({
-            'id': customer.id,
-            'company_name': customer.companyName,
-            'unified_business_number': customer.companyId or '',
-            'tax_id_number': '',  # BasicInformation沒有稅籍編號欄位
-            'registration_address': customer.registration_address or '',
-            'contact_person': customer.contact or '',
-            'phone': customer.phone or customer.phoneNumber or '',
-            'email': customer.email or '',
+            'id': c.id,
+            'company_name': c.companyName,
+            'unified_business_number': c.companyId,
+            'contact_person': c.contact or '',
+            # Hidden fields for autofill
+            'tax_id': c.companyId, 
+            'line_id': c.LineId or '',
+            'room_id': c.room_id or '',
         })
-    
-    return JsonResponse({'customers': results})
+    response_data = {
+        'config': {
+            'value_field': 'id',
+            'display_field': 'company_name',
+            'columns': [
+                {'title': '公司名稱', 'data': 'company_name'},
+                {'title': '統編', 'data': 'unified_business_number'},
+                {'title': '負責人', 'data': 'contact_person'},
+            ]
+        },
+        'data': results
+    }
+    return JsonResponse(response_data)
 
 
 def customer_list(request):

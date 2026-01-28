@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{% block title %}SmartFirm - AdminLTE Preview{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css">
+
+    <!-- OverlayScrollbars -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/styles/overlayscrollbars.min.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.min.css">
+
+    <!-- AdminLTE v4 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/css/adminlte.min.css">
+
+    <style>
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+    <div class="app-wrapper"> <!-- AdminLTE App Wrapper -->
+
+        <!-- Header / Navbar -->
+        <nav class="app-header navbar navbar-expand bg-body">
+            <div class="container-fluid">
+                <!-- Sidebar Toggle Button -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                            <i class="bi bi-list"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item d-none d-md-block">
+                        <a href="{% url 'dashboard:index' %}" class="nav-link">Home</a>
+                    </li>
+                </ul>
+
+                <!-- Right Navbar Links -->
+                <ul class="navbar-nav ms-auto">
+                    <!-- User Menu -->
+                    <li class="nav-item dropdown user-menu">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle rounded-circle shadow-sm"></i>
+                            <span class="d-none d-md-inline ms-1">{{ user.username|default:"Guest" }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                            <!-- User Image -->
+                            <li class="user-header text-bg-primary">
+                                <i class="bi bi-person-circle display-4"></i>
+                                <p>
+                                    {{ user.username|default:"Guest" }}
+                                    <small>SmartFirm User</small>
+                                </p>
+                            </li>
+                            <!-- Menu Footer-->
+                            <li class="user-footer">
+                                <a href="#" class="btn btn-default btn-flat">Profile</a>
+                                {% if user.is_authenticated %}
+                                <form action="{% url 'logout' %}" method="post" class="d-inline float-end">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-default btn-flat">登出</button>
+                                </form>
+                                {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-default btn-flat float-end">登入</a>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+            <div class="sidebar-brand">
+                <a href="{% url 'dashboard:index' %}" class="brand-link">
+                    <!-- <img src="..." alt="Logo" class="brand-image opacity-75 shadow"> -->
+                    <span class="brand-text fw-light ms-2">SmartFirm</span>
+                </a>
+            </div>
+
+            <div class="sidebar-wrapper">
+                <nav class="mt-2">
+                    <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu"
+                        data-accordion="false">
+
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a href="{% url 'dashboard:index' %}"
+                                class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+                                <i class="nav-icon bi bi-speedometer2"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+
+                        <!-- 管理系統 -->
+                        <li
+                            class="nav-item {% if request.resolver_match.app_name == 'admin_module' %}menu-open{% endif %}">
+                            <a href="#"
+                                class="nav-link {% if request.resolver_match.app_name == 'admin_module' %}active{% endif %}">
+                                <i class="nav-icon bi bi-people"></i>
+                                <p>
+                                    管理系統
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{% url 'admin_module:customer_list' %}"
+                                        class="nav-link {% if 'customer' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>客戶列表</p> <!-- icon changed to circle for consistency in submenus -->
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'admin_module:contact_list' %}"
+                                        class="nav-link {% if 'contact' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>聯絡人列表</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'admin_module:incoming_mail_list' %}"
+                                        class="nav-link {% if 'incoming-mail' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>收文系統</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'admin_module:customer_change_list' %}"
+                                        class="nav-link {% if 'customer-change' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>客戶增減</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'admin_module:vat_check_list' %}"
+                                        class="nav-link {% if 'vat-check' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>營業稅檢查</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'admin_module:bookkeeping_checklist_list' %}"
+                                        class="nav-link {% if 'bookkeeping-checklist' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>記帳進度檢查</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- 稽核系統 -->
+                        <li class="nav-item">
+                            <a href="/audit/"
+                                class="nav-link {% if request.resolver_match.app_name == 'audit' %}active{% endif %}">
+                                <i class="nav-icon bi bi-file-earmark-check"></i>
+                                <p>稽核系統</p>
+                            </a>
+                        </li>
+
+                        <!-- Master系統 -->
+                        <li class="nav-item {% if 'master' in request.resolver_match.namespaces %}menu-open{% endif %}">
+                            <a href="#"
+                                class="nav-link {% if 'master' in request.resolver_match.namespaces %}active{% endif %}">
+                                <i class="nav-icon bi bi-folder"></i>
+                                <p>
+                                    Master系統
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{% url 'master:serviceitem_list' %}"
+                                        class="nav-link {% if 'service-items' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>收費明細表</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- 登記系統 -->
+                        <li
+                            class="nav-item {% if 'registration' in request.resolver_match.namespaces %}menu-open{% endif %}">
+                            <a href="#"
+                                class="nav-link {% if 'registration' in request.resolver_match.namespaces %}active{% endif %}">
+                                <i class="nav-icon bi bi-clipboard-check"></i>
+                                <p>
+                                    登記系統
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{% url 'registration:progress:list' %}"
+                                        class="nav-link {% if 'progress' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>登記進度</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'registration:shareholders:roster' %}"
+                                        class="nav-link {% if 'roster' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>股東名冊</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'registration:shareholders:list' %}"
+                                        class="nav-link {% if 'shareholders' in request.path and 'list' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>股東及董監事管理</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'registration:shareholders:transaction_list' %}"
+                                        class="nav-link {% if 'transactions' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>股權交易</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'registration:board:list' %}"
+                                        class="nav-link {% if 'board' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>董監名單</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- 記帳系統 -->
+                        <li class="nav-item {% if request.resolver_match.app_name == 'booking' %}menu-open{% endif %}">
+                            <a href="#"
+                                class="nav-link {% if request.resolver_match.app_name == 'booking' %}active{% endif %}">
+                                <i class="nav-icon bi bi-journal-text"></i>
+                                <p>
+                                    記帳系統
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{% url 'booking:customer_list' %}"
+                                        class="nav-link {% if 'customers' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>客戶列表</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'booking:tax_audit_list' %}"
+                                        class="nav-link {% if 'tax-audit' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>國稅局查帳</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'booking:vat_record_list' %}"
+                                        class="nav-link {% if '/vat/' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>營業稅申報</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'booking:income_tax_list' %}"
+                                        class="nav-link {% if '/income-tax/' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>所得稅申報</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'booking:download_data_list' %}"
+                                        class="nav-link {% if '/download-data/' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>下載資料</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- 人事系統 -->
+                        <li class="nav-item {% if 'hr' in request.resolver_match.namespaces %}menu-open{% endif %}">
+                            <a href="#"
+                                class="nav-link {% if 'hr' in request.resolver_match.namespaces %}active{% endif %}">
+                                <i class="nav-icon bi bi-person-badge-fill"></i>
+                                <p>
+                                    人事系統
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{% url 'hr:employee_list' %}"
+                                        class="nav-link {% if 'employee' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>員工管理</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="app-main">
+
+            <!-- Page Header -->
+            <div class="app-content-header">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h3 class="mb-0">{% block page_header %}Dashboard{% endblock %}</h3>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-end">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    {% block breadcrumb %}Dashboard{% endblock %}
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="app-content">
+                <div class="container-fluid">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="float-end d-none d-sm-inline">SmartFirm System</div>
+            <strong>Copyright &copy; 2024 <a href="#">SmartFirm</a>.</strong> All rights reserved.
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/browser/overlayscrollbars.browser.es6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/js/adminlte.min.js"></script>
+
+    <script>
+        const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
+        const Default = {
+            scrollbarTheme: "os-theme-light",
+            scrollbarAutoHide: "leave",
+            scrollbarClickScroll: true,
+        };
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+            if (sidebarWrapper && typeof OverlayScrollbarsGlobal !== "undefined") {
+                OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                    scrollbars: {
+                        theme: Default.scrollbarTheme,
+                        autoHide: Default.scrollbarAutoHide,
+                        clickScroll: Default.scrollbarClickScroll,
+                    },
+                });
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

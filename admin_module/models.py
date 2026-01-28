@@ -41,6 +41,12 @@ class BasicInformation(models.Model):
         null=True,
         verbose_name='Line ID'
     )
+    room_id = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name='Room ID'
+    )
     fax_number = models.CharField(
         max_length=20,
         blank=True,
@@ -53,8 +59,20 @@ class BasicInformation(models.Model):
         null=True,
         verbose_name='帳號後五碼'
     )
+    registration_zip_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name='登記地址郵遞區號'
+    )
     registration_address = models.TextField(
         verbose_name='登記地址'
+    )
+    mailing_zip_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name='通訊地址郵遞區號'
     )
     mailing_address = models.TextField(
         blank=True,

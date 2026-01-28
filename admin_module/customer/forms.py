@@ -15,9 +15,12 @@ class BasicInformationForm(forms.ModelForm):
             'phoneNumber',
             'phone',
             'LineId',
+            'room_id',
             'fax_number',
             'account_last_5',
+            'registration_zip_code',
             'registration_address',
+            'mailing_zip_code',
             'mailing_address',
             'important_notes',
         ]
@@ -51,6 +54,10 @@ class BasicInformationForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': '請輸入 Line ID',
             }),
+            'room_id': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Room ID',
+            }),
             'fax_number': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': '例：02-87654321',
@@ -60,10 +67,20 @@ class BasicInformationForm(forms.ModelForm):
                 'placeholder': '請輸入帳號後5碼',
                 'maxlength': '5',
             }),
+            'registration_zip_code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '郵遞區號',
+                'maxlength': '10',
+            }),
             'registration_address': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
                 'placeholder': '請輸入公司登記地址',
+            }),
+            'mailing_zip_code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '郵遞區號',
+                'maxlength': '10',
             }),
             'mailing_address': forms.Textarea(attrs={
                 'class': 'form-control',

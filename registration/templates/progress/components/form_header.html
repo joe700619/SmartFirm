@@ -1,0 +1,153 @@
+<div class="card-header border-bottom">
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <!-- Right Top: Prev/Next -->
+        <div class="order-3 ms-auto">
+            <div class="btn-group">
+                <a href="{% url 'registration:progress:list' %}" class="btn btn-outline-secondary btn-sm" title="回到列表">
+                    <i class="bi bi-list-ul"></i>
+                </a>
+
+                {% if previous_case %}
+                <a href="{% url 'registration:progress:edit' previous_case %}" class="btn btn-outline-secondary btn-sm"
+                    title="上一筆">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+                {% else %}
+                <button type="button" class="btn btn-outline-secondary btn-sm disabled"><i
+                        class="bi bi-chevron-left"></i></button>
+                {% endif %}
+
+                {% if next_case %}
+                <a href="{% url 'registration:progress:edit' next_case %}" class="btn btn-outline-secondary btn-sm"
+                    title="下一筆">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                {% else %}
+                <button type="button" class="btn btn-outline-secondary btn-sm disabled"><i
+                        class="bi bi-chevron-right"></i></button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Left Top: Save/Cancel & Add -->
+        <div class="order-1 me-auto d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-save"></i> 儲存
+            </button>
+            <a href="{% url 'registration:progress:list' %}" class="btn btn-outline-secondary btn-sm">
+                取消
+            </a>
+            <div class="vr"></div>
+            <a href="{% url 'registration:progress:add' %}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-plus-circle"></i> 新增
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card-body pt-3">
+    <!-- Header Title Area -->
+    <div class="d-flex align-items-center mb-4">
+        <h3 class="card-title fs-3 fw-light">
+            <i class="bi bi-file-earmark-text me-2"></i>
+            登記案件單
+            <small class="text-muted fs-6 ms-2">#{{ form.instance.case_number }}</small>
+        </h3>
+    </div>
+
+    <!-- Invoice Info Row -->
+    <div class="row invoice-info mb-4 border-bottom pb-4">
+        <!-- Col 1: Company Info -->
+        <div class="col-sm-4 invoice-col border-end">
+            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-building"></i> 公司資料</h6>
+            <div class="mb-2">
+                <label>公司名稱</label>
+                {{ form.customer }}
+                <!-- Display generic errors -->
+                {% if form.customer.errors %}<div class="text-danger small">{{ form.customer.errors
+                    }}</div>{% endif %}
+            </div>
+            <div class="mb-2">
+                <label>統一編號</label>
+                {{ form.tax_id }}
+            </div>
+            <div class="row">
+                <div class="col-6 mb-2">
+                    <label>Line ID</label>
+                    {{ form.line_id }}
+                </div>
+                <div class="col-6 mb-2">
+                    <label>Room ID</label>
+                    {{ form.room_id }}
+                </div>
+            </div>
+        </div>
+        <!-- Col 2: Contact Info -->
+        <div class="col-sm-4 invoice-col border-end">
+            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-person-lines-fill"></i> 聯絡資訊</h6>
+            <div class="mb-2">
+                <label>主要聯絡人</label>
+                {{ form.main_contact }}
+            </div>
+            <div class="row">
+                <div class="col-6 mb-2">
+                    <label>電話</label>
+                    {{ form.contact_phone }}
+                </div>
+                <div class="col-6 mb-2">
+                    <label>手機</label>
+                    {{ form.contact_mobile }}
+                </div>
+            </div>
+            <div class="mb-2">
+                <label>Email</label>
+                {{ form.contact_email }}
+            </div>
+            <div class="row">
+                <div class="col-3 mb-2">
+                    <label>寄送</label>
+                    {{ form.delivery_method }}
+                </div>
+                <div class="col mb-2">
+                    <label>地址</label>
+                    {{ form.contact_address }}
+                </div>
+            </div>
+        </div>
+        <!-- Col 3: Case Meta -->
+        <div class="col-sm-4 invoice-col">
+            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-info-circle"></i> 案件狀態</h6>
+            <div class="mb-2">
+                <label>委任狀態</label>
+                {{ form.mandate_status }}
+            </div>
+            <div class="mb-2">
+                <label>案件狀態</label>
+                {{ form.status }}
+            </div>
+            <div class="mb-2">
+                <label>案件類別</label>
+                {{ form.case_type }}
+            </div>
+            <div class="row">
+                <div class="col-6 mb-2">
+                    <label>承接日期</label>
+                    {{ form.acceptance_date }}
+                </div>
+                <div class="col-6 mb-2">
+                    <label>截止日期</label>
+                    {{ form.due_date }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <!-- Middle Section: Remarks -->
+    <div class="row mb-4 border-bottom pb-4">
+        <div class="col-12">
+            <label class="fw-bold text-secondary mb-1">備註事項</label>
+            {{ form.remarks }}
+        </div>
+    </div>
+</div>

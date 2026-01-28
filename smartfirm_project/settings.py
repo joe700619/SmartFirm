@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'booking',
     'admin_module',
     'hr',
+    'master',
+    'core',
 ]
 
 MIDDLEWARE = [

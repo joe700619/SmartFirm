@@ -1,0 +1,50 @@
+<div class="col-md-3">
+    <!-- Action Zone -->
+    <div class="card text-dark bg-light mb-3">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-lightning-charge"></i> 動作專區</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
+                    <i class="bi bi-dash-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-2">
+            {% if buttons_template %}
+            {% include buttons_template %}
+            {% else %}
+            {% include "progress/components/tools_buttons.html" %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Change Log -->
+    <div class="card card-outline card-secondary">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-clock-history"></i> 變更紀錄</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
+                    <i class="bi bi-dash-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% if form.instance.created_at %}
+                <div class="list-group-item bg-transparent">
+                    <div class="d-flex w-100 justify-content-between">
+                        <small class="text-muted">{{ form.instance.created_at|date:"Y/m/d H:i" }}</small>
+                    </div>
+                    <p class="mb-1 small">案件建立</p>
+                </div>
+                {% endif %}
+                <div class="list-group-item bg-transparent">
+                    <div class="d-flex w-100 justify-content-between">
+                        <small class="text-muted">Now</small>
+                    </div>
+                    <p class="mb-1 small">編輯中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

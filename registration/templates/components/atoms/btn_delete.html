@@ -1,0 +1,6 @@
+{% if form.instance.pk %}
+<hr class="my-2">
+<a href="{% url 'registration:progress:delete' form.instance.pk %}" class="btn btn-outline-danger text-start">
+    <i class="bi bi-trash me-2"></i> 刪除此案件
+</a>
+{% endif %}
