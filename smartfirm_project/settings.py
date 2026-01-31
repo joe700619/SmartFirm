@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'hr',
     'master',
     'core',
+    'payment',
 ]
 
 MIDDLEWARE = [

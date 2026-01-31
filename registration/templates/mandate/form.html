@@ -3,8 +3,68 @@
         <label class="form-label">委任日期</label>
         {{ form.mandate_date }}
     </div>
+    <div class="col-md-6 mb-3 d-flex align-items-end">
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#mandateLinkModal">
+            <i class="bi bi-share"></i> 產生委任連結
+        </button>
+    </div>
+</div>
+
+<!-- Mandate Link Modal -->
+<div class="modal fade" id="mandateLinkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">委任連結訊息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" rows="8" id="mandateMessageText">
+{{ progress.customer.companyName }}您好：
+線上報價單及連結網址如下:
+{{ request.scheme }}://{{ request.get_host }}{% url 'registration:mandate:detail' progress.pk %}
+
+付款後即可進行辦理，若有付款問題，請與我聯絡
+</textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                <button type="button" class="btn btn-primary" onclick="copyMandateMessage()">
+                    <i class="bi bi-clipboard"></i> 複製訊息
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyMandateMessage() {
+        var copyText = document.getElementById("mandateMessageText");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+        navigator.clipboard.writeText(copyText.value).then(function () {
+            alert("訊息已複製到剪貼簿");
+        }, function (err) {
+            alert("複製失敗: ", err);
+        });
+    }
+</script>
+<div class="row">
     <div class="col-md-6 mb-3">
-        <!-- Signed status is handled by main case status as per user request -->
+        <div class="form-check">
+            {{ form.is_drafting_agreed }}
+            <label class="form-check-label" for="{{ form.is_drafting_agreed.id_for_label }}">
+                擬稿同意
+            </label>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="form-check">
+            {{ form.is_seal_authorized }}
+            <label class="form-check-label" for="{{ form.is_seal_authorized.id_for_label }}">
+                用印授權
+            </label>
+        </div>
     </div>
 </div>
 <div class="mb-3">

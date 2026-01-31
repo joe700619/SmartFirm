@@ -55,3 +55,30 @@ class CaseType(models.Model):
         verbose_name = '案件類別'
         verbose_name_plural = '案件類別'
         ordering = ['name']
+
+class SystemParameter(models.Model):
+    gemini_api_key = models.CharField(max_length=255, blank=True, verbose_name='Gemini API Key')
+    line_access_token = models.CharField(max_length=255, blank=True, verbose_name='Line Access Token')
+    line_web_url = models.URLField(blank=True, verbose_name='Line Web Hook')
+    ecpay_merchant_id = models.CharField(max_length=50, blank=True, verbose_name='綠界 Merchant ID')
+    ecpay_hash_key = models.CharField(max_length=50, blank=True, verbose_name='綠界 Hash Key')
+    ecpay_hash_iv = models.CharField(max_length=50, blank=True, verbose_name='綠界 Hash IV')
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(SystemParameter, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "系統參數設定"
+
+    class Meta:
+        verbose_name = '系統參數'
+        verbose_name_plural = '系統參數'

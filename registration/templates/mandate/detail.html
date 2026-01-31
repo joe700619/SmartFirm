@@ -1,0 +1,175 @@
+{% extends "base_public.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block page_header %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h3>委任書</h3>
+        </div>
+    </div>
+
+    <form method="post" id="mandate-form">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">基本資訊</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">案號</label>
+                        <div class="form-control-plaintext fw-bold">{{ progress.case_number }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">公司名稱</label>
+                        <div class="form-control-plaintext fw-bold">{{ progress.customer.companyName }}</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">主要聯絡人</label>
+                        <div class="form-control-plaintext">{{ progress.main_contact.name|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">電話 / 手機</label>
+                        <div class="form-control-plaintext">
+                            {% if progress.main_contact.phone %}{{ progress.main_contact.phone }}{% endif %}
+                            {% if progress.main_contact.phone and progress.main_contact.mobile %} / {% endif %}
+                            {% if progress.main_contact.mobile %}{{ progress.main_contact.mobile }}{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label">地址</label>
+                        {{ form.address }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">交付方式 <span class="text-danger">*</span></label>
+                        {{ form.delivery_method }}
+                        <div id="delivery-warning" class="alert alert-warning mt-2 d-none">
+                            <i class="bi bi-exclamation-triangle"></i> 注意：選擇郵寄可能會產生額外費用。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title">服務項目</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>服務項目</th>
+                            <th>服務名稱</th>
+                            <th class="text-end">費用</th>
+                            <th>備註</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in progress.services.all %}
+                        {% if not service.is_deleted %}
+                        <tr>
+                            <td>{{ service.service_item|default:"" }}</td>
+                            <td>{{ service.service_name }}</td>
+                            <td class="text-end fee-display">{{ service.fee }}</td>
+                            <td>{{ service.remarks }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold table-light">
+                            <td colspan="2" class="text-end">總計</td>
+                            <td class="text-end fee-display">{{ total_fee }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title">條款確認</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="form-check">
+                        {{ form.is_drafting_agreed }}
+                        <label class="form-check-label" for="{{ form.is_drafting_agreed.id_for_label }}">
+                            擬稿同意：本人確認本次委任包含代為撰擬相關文件。
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        {{ form.is_seal_authorized }}
+                        <label class="form-check-label" for="{{ form.is_seal_authorized.id_for_label }}">
+                            用印授權：本人授權事務所代為刻製並使用印章於本案相關文件。
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">備註</label>
+                    {{ form.remarks }}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" id="submit-btn" class="btn btn-primary"><i class="bi bi-save"></i> 儲存設定</button>
+            <a href="{% url 'registration:progress:edit' progress.pk %}" class="btn btn-secondary"><i
+                    class="bi bi-arrow-return-left"></i> 返回案件</a>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'js/thousand-separator.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Thousand Separator for display
+        const feeDisplays = document.querySelectorAll('.fee-display');
+        feeDisplays.forEach(el => {
+            if (el.textContent.trim()) {
+                el.textContent = ThousandSeparator.formatNumber(el.textContent.trim());
+            }
+        });
+
+        // Delivery Warning Logic
+        const deliverySelect = document.getElementById('{{ form.delivery_method.id_for_label }}');
+        const warning = document.getElementById('delivery-warning');
+        const submitBtn = document.getElementById('submit-btn');
+
+        function toggleWarningAndSubmit() {
+            // Warning logic
+            if (deliverySelect.value === 'post') {
+                warning.classList.remove('d-none');
+            } else {
+                warning.classList.add('d-none');
+            }
+
+            // Submit button logic
+            if (!deliverySelect.value) {
+                submitBtn.disabled = true;
+            } else {
+                submitBtn.disabled = false;
+            }
+        }
+
+        if (deliverySelect) {
+            deliverySelect.addEventListener('change', toggleWarningAndSubmit);
+            toggleWarningAndSubmit(); // Initial check
+        }
+    });
+</script>
+{% endblock %}

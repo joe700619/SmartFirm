@@ -184,6 +184,14 @@
                                         <p>收費明細表</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'master:system_parameters' %}"
+                                        class="nav-link {% if 'system/parameters' in request.path %}active{% endif %}">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>系統參數設定</p>
+                                    </a>
+                                </li>
+
                             </ul>
                         </li>
 

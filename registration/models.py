@@ -432,8 +432,16 @@ class RegistrationMandate(SmartFirmBaseModel):
         verbose_name='登記案件'
     )
     # 範例欄位：委任日期, 簽署狀態
+    DELIVERY_CHOICES = [
+        ('self', '自取'),
+        ('post', '郵寄'),
+    ]
     mandate_date = models.DateField(blank=True, null=True, verbose_name='委任日期')
+    delivery_method = models.CharField(max_length=20, choices=DELIVERY_CHOICES, blank=True, null=True, verbose_name='交付方式')
+    address = models.CharField(max_length=200, blank=True, null=True, verbose_name='地址')
     is_signed = models.BooleanField(default=False, verbose_name='是否已簽署')
+    is_drafting_agreed = models.BooleanField(default=True, verbose_name='擬稿同意')
+    is_seal_authorized = models.BooleanField(default=True, verbose_name='用印授權')
     remarks = models.TextField(blank=True, null=True, verbose_name='備註')
 
     class Meta:
